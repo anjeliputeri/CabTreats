@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/colors.dart';
@@ -13,15 +14,34 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   @override
-  Widget build(BuildContext context) {
-    Future.delayed(
-      const Duration(seconds: 1),
-      () => context.goNamed(
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  void _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    print('isLoggedIn: $isLoggedIn');
+
+    if (isLoggedIn) {
+      context.goNamed(
         RouteConstants.root,
         pathParameters: PathParameters().toMap(),
-      ),
-    );
+      );
+    } else {
+      Future.delayed(
+        const Duration(seconds: 1),
+            () => context.goNamed(
+          RouteConstants.login,
+        ),
+      );
+    }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return const Scaffold(
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(30.0),

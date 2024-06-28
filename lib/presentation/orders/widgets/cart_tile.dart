@@ -10,8 +10,9 @@ import '../../home/bloc/checkout/checkout_bloc.dart';
 import '../models/cart_model.dart';
 
 class CartTile extends StatelessWidget {
-  final ProductQuantity data;
-  const CartTile({super.key, required this.data});
+  // final ProductQuantity data;
+  // const CartTile({super.key, required this.data});
+  const CartTile({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +37,7 @@ class CartTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
           decoration: BoxDecoration(
+            color: Colors.white,
             border: Border.all(color: AppColors.stroke),
           ),
           child: Stack(
@@ -45,10 +47,7 @@ class CartTile extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                    child: Image.network(
-                      data.product.image!.contains('http')
-                          ? data.product.image!
-                          : '${Variables.baseUrlImage}${data.product.image}',
+                    child: Image.network('https://firebasestorage.googleapis.com/v0/b/cabtreats-100a4.appspot.com/o/products%2F2024-06-20%2022%3A43%3A15.795585?alt=media&token=e30172e5-b8b6-4049-a345-cf8e36546d3c',
                       width: 68.0,
                       height: 68.0,
                       fit: BoxFit.cover,
@@ -59,7 +58,7 @@ class CartTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        data.product.name!,
+                        "nasi ayam hot mayo enak",
                         style: const TextStyle(
                           fontSize: 16,
                         ),
@@ -68,7 +67,7 @@ class CartTile extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            data.product.price!.currencyFormatRp,
+                            "Rp120000",
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontSize: 16,
@@ -88,9 +87,9 @@ class CartTile extends StatelessWidget {
                     borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                     child: InkWell(
                       onTap: () {
-                        context
-                            .read<CheckoutBloc>()
-                            .add(CheckoutEvent.removeItem(data.product));
+                        // context
+                        //     .read<CheckoutBloc>()
+                        //     .add(CheckoutEvent.removeItem(data.product));
                       },
                       child: const ColoredBox(
                         color: AppColors.primary,
@@ -107,16 +106,16 @@ class CartTile extends StatelessWidget {
                   const SpaceWidth(4.0),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text('${data.quantity}'),
+                    child: Text('${6}'),
                   ),
                   const SpaceWidth(4.0),
                   ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                     child: InkWell(
                       onTap: () {
-                        context
-                            .read<CheckoutBloc>()
-                            .add(CheckoutEvent.addItem(data.product));
+                        // context
+                        //     .read<CheckoutBloc>()
+                        //     .add(CheckoutEvent.addItem(data.product));
                       },
                       child: const ColoredBox(
                         color: AppColors.primary,

@@ -22,7 +22,6 @@ class TextDescription extends StatefulWidget {
 class _TextDescriptionState extends State<TextDescription> {
   @override
   Widget build(BuildContext context) {
-    final quill.QuillController controller = quill.QuillController.basic();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -45,7 +44,7 @@ class _TextDescriptionState extends State<TextDescription> {
           child: Column(
             children: [
              quill.QuillToolbar.simple(configurations: quill.QuillSimpleToolbarConfigurations(
-                 controller: controller,
+                 controller: widget.controller,
                showCodeBlock: false,
                showSearchButton: false,
                showAlignmentButtons: false,
@@ -72,7 +71,7 @@ class _TextDescriptionState extends State<TextDescription> {
               const SizedBox(height: 8.0),
               Container(
                 height: 200, // Adjust the height as needed
-                child: quill.QuillEditor.basic(configurations: quill.QuillEditorConfigurations(controller: controller))
+                child: quill.QuillEditor.basic(configurations: quill.QuillEditorConfigurations(controller: widget.controller))
               ),
             ],
           ),

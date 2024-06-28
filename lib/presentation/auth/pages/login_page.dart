@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/data/datasources/auth_local_datasource.dart';
-import 'package:flutter_onlineshop_app/presentation/auth/bloc/login/login_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/components/buttons.dart';
+import '../../../core/components/custom_text_field.dart';
 import '../../../core/components/spaces.dart';
 import '../../../core/core.dart';
 import '../../../core/router/app_router.dart';
-import '../../../data/datasources/firebase_messanging_remote_datasource.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,19 +18,77 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  void _validateAndLogin(BuildContext context) async {
+    final email = emailController.text;
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showDialog(context, 'Warning', 'Please enter both email and password.');
+    } else if (!_isValidEmail(email)) {
+      _showDialog(context, 'Warning', 'Please enter a valid email address.');
+    } else if (password.length < 6) {
+      _showDialog(context, 'Warning', 'Password must be at least 6 characters long.');
+    } else {
+      final loginResult = await _login(email, password);
+
+      if (loginResult == 'success') {
+        context.goNamed(
+          RouteConstants.root,
+          pathParameters: PathParameters().toMap(),
+        );
+      } else {
+        _showDialog(context, 'Warning', 'Please enter your email and password correctly');
+      }
+    }
+  }
+
+  Future<String> _login(String email, String password) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      return 'success';
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    return emailRegex.hasMatch(email);
+  }
+
+  void _showDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -54,74 +112,34 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SpaceHeight(50.0),
           const SpaceHeight(60.0),
-          TextFormField(
+          CustomTextField(
             controller: emailController,
+            suffixIcon: Icon(Icons.email_outlined, color: Colors.grey),
             keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              labelText: 'Email ID',
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Assets.icons.email.svg(),
-              ),
-            ),
+            label: 'Email',
           ),
           const SpaceHeight(20.0),
-          TextFormField(
+          CustomTextField(
             controller: passwordController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Assets.icons.password.svg(),
+            obscureText: _obscurePassword,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                color: Colors.grey,
               ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
             ),
+            keyboardType: TextInputType.visiblePassword,
+            label: 'Password',
           ),
           const SpaceHeight(50.0),
-          BlocConsumer<LoginBloc, LoginState>(
-            listener: (context, state) {
-              state.maybeWhen(
-                orElse: () {},
-                loaded: (data) async {
-                  AuthLocalDatasource().saveAuthData(data);
-                  await FirebaseMessagingRemoteDatasource().initialize();
-                  context.goNamed(
-                    RouteConstants.root,
-                    pathParameters: PathParameters().toMap(),
-                  );
-                },
-                error: (message) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      backgroundColor: AppColors.red,
-                      content: Text(message),
-                    ),
-                  );
-                },
-              );
-            },
-            builder: (context, state) {
-              return state.maybeWhen(
-                orElse: () {
-                  return Button.filled(
-                    onPressed: () {
-                      context.read<LoginBloc>().add(
-                            LoginEvent.login(
-                              email: emailController.text,
-                              password: passwordController.text,
-                            ),
-                          );
-                    },
-                    label: 'Login',
-                  );
-                },
-                loading: () {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                },
-              );
-            },
+          Button.filled(
+            onPressed: () => _validateAndLogin(context),
+            label: 'Login',
           ),
           const SpaceHeight(50.0),
           InkWell(

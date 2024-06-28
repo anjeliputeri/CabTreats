@@ -67,8 +67,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: products.length,
                     itemBuilder: (context, index) => CartTile(
-                      data: products[index],
-                    ),
+                     ),
                     separatorBuilder: (context, index) =>
                         const SpaceHeight(16.0),
                   );

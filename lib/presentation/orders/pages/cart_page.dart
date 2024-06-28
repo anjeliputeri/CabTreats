@@ -80,17 +80,18 @@ class CartPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
+          CartTile(),
           BlocBuilder<CheckoutBloc, CheckoutState>(
             builder: (context, state) {
               return state.maybeWhen(
-                  orElse: () => const SizedBox.shrink(),
+                  orElse: () => CartTile(),
                   loaded: (checkout, _, __, ___, ____, _____) {
                     return ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: checkout.length,
                       itemBuilder: (context, index) => CartTile(
-                        data: checkout[index],
+                        // data: checkout[index],
                       ),
                       separatorBuilder: (context, index) =>
                           const SpaceHeight(16.0),

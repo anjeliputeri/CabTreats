@@ -11,8 +11,9 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    final formatter = NumberFormat.decimalPattern();
-    String newText = 'Rp ' + formatter.format(int.parse(newValue.text));
+    final formatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    String newText = formatter.format(int.parse(newValue.text.replaceAll('.', '')));
+
     return TextEditingValue(
       text: newText,
       selection: TextSelection.collapsed(offset: newText.length),

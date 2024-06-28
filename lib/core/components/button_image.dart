@@ -34,8 +34,7 @@ class ButtonImage extends StatelessWidget {
               borderRadius: BorderRadius.circular(5.0),
             ),
             minimumSize: Size(double.infinity, 0),
-            backgroundColor: Colors.white,
-            side: BorderSide(color: Colors.grey, width: 1.0), // Border color and width
+            side: BorderSide(color: Colors.grey, width: 1.0),
           ),
           label: Text(
             buttonText,

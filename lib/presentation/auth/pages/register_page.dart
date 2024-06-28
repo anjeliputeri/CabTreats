@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_onlineshop_app/core/components/components.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/components/buttons.dart';
@@ -14,10 +17,98 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final phoneController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
+  final FirebaseFirestore db = FirebaseFirestore.instance;
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+
+  String selectedRole = 'Buyer';
+  bool _obscurePassword = true;
+
+  final List<String> role = [
+    'Buyer',
+    'Seller'
+  ];
+
+  Future<void> _addUser() async {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty || nameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hello, please complete the data below to register a new account'),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+
+      String uid = userCredential.user!.uid;
+
+      await db.collection('users').doc(uid).set({
+        'name': nameController.text,
+        'email': emailController.text,
+        'role': selectedRole,
+      });
+
+      Navigator.of(context).pop();
+      _showSuccessDialog();
+
+      nameController.clear();
+      emailController.clear();
+      passwordController.clear();
+      setState(() {
+        selectedRole = 'Buyer';
+      });
+
+      context.goNamed(
+        RouteConstants.login,
+      );
+
+    } on FirebaseAuthException catch (e) {
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? 'An error occurred'),
+        ),
+      );
+    }
+  }
+
+  void _showSuccessDialog(){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Success'),
+            content: const Text('User added successfully'),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+    );
+  }
 
   @override
   void initState() {
@@ -26,10 +117,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    phoneController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    confirmPasswordController.dispose();
+    nameController.dispose();
     super.dispose();
   }
 
@@ -53,50 +143,51 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
           const SpaceHeight(50.0),
-          const SpaceHeight(60.0),
-          TextFormField(
+          CustomTextField(
+            controller: nameController,
+            suffixIcon: Icon(Icons.person, color: Colors.grey),
+            keyboardType: TextInputType.name,
+            label: 'Name',
+          ),
+          const SpaceHeight(20.0),
+          CustomTextField(
             controller: emailController,
+            suffixIcon: Icon(Icons.email_outlined, color: Colors.grey),
             keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              labelText: 'Email ID',
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Assets.icons.email.svg(),
-              ),
-            ),
+            label: 'Email',
           ),
           const SpaceHeight(20.0),
-          TextFormField(
+          CustomTextField(
             controller: passwordController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Assets.icons.password.svg(),
+            obscureText: _obscurePassword,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                color: Colors.grey,
               ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
             ),
+            keyboardType: TextInputType.visiblePassword,
+            label: 'Password',
           ),
           const SpaceHeight(20.0),
-          TextFormField(
-            controller: confirmPasswordController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Confirm Password',
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Assets.icons.password.svg(),
-              ),
-            ),
+          CustomDropdown<String>(
+            value: selectedRole,
+            items: role,
+            label: 'Role',
+            onChanged: (value) {
+              setState(() {
+                selectedRole = value!;
+              });
+            },
           ),
           const SpaceHeight(50.0),
           Button.filled(
-            onPressed: () {
-              context.goNamed(
-                RouteConstants.root,
-                pathParameters: PathParameters().toMap(),
-              );
-            },
+            onPressed: _addUser,
             label: 'Register',
           ),
           const SpaceHeight(50.0),

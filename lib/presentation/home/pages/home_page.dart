@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/core/router/app_router.dart';
@@ -30,6 +32,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late TextEditingController searchController;
+  bool isSeller = false;
 
   final List<String> banners1 = [
     Assets.images.banner1.path,
@@ -44,21 +47,27 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    searchController = TextEditingController();
-    context.read<AllProductBloc>().add(const AllProductEvent.getAllProducts());
-    context
-        .read<BestSellerProductBloc>()
-        .add(const BestSellerProductEvent.getBestSellerProducts());
-    context
-        .read<SpecialOfferProductBloc>()
-        .add(const SpecialOfferProductEvent.getSpecialOfferProducts());
     super.initState();
+    searchController = TextEditingController();
+    fetchUserRole();
   }
 
   @override
   void dispose() {
     searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> fetchUserRole() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if(uid != null){
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userRole = userDoc.data()?['role'] as String?;
+      setState(() {
+        isSeller = userRole == 'Seller';
+      });
+    }
   }
 
   @override
@@ -138,7 +147,7 @@ class _HomePageState extends State<HomePage> {
           const MenuCategories(),
           const SpaceHeight(12.0),
           TitleContent(
-            title: 'Catering Menu',
+            title: 'Catering & Snack Menu',
             onSeeAllTap: () {},
           ),
           const SpaceHeight(12.0),
@@ -146,7 +155,8 @@ class _HomePageState extends State<HomePage> {
           const SpaceHeight(50.0),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: isSeller
+        ? FloatingActionButton(
         onPressed: (){
           Navigator.push(
               context, MaterialPageRoute(builder: (context) => AddProductPage()),
@@ -154,7 +164,8 @@ class _HomePageState extends State<HomePage> {
         },
         backgroundColor: Theme.of(context).primaryColor,
         child: Icon(Icons.add, color: Colors.white),
-      ),
+      )
+      : null,
     );
   }
 }
