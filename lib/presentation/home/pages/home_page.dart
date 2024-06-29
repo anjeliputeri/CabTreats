@@ -5,13 +5,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/core/router/app_router.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/all_product/all_product_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/product_card.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/pages/add_product_page.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/assets/assets.gen.dart';
 import '../../../core/components/search_input.dart';
 import '../../../core/components/spaces.dart';
 import '../../../data/models/responses/product_response_model.dart';
+import '../../orders/models/cart_item.dart';
+import '../../orders/models/cart_provider.dart';
 import '../bloc/best_seller_product/best_seller_product_bloc.dart';
 import '../bloc/checkout/checkout_bloc.dart';
 import '../bloc/special_offer_product/special_offer_product_bloc.dart';
@@ -33,6 +37,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late TextEditingController searchController;
   bool isSeller = false;
+  int totalQuantity = 28;
 
   final List<String> banners1 = [
     Assets.images.banner1.path,
@@ -50,6 +55,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     searchController = TextEditingController();
     fetchUserRole();
+    fetchCartQuantity();
   }
 
   @override
@@ -70,6 +76,55 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> fetchCartQuantity() async {
+    var cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final cartSnapshot = await FirebaseFirestore.instance
+        .collection('cart')
+        .doc(user.email)
+        .get();
+
+    if (!cartSnapshot.exists) {
+      print("No cart data found for user ${user.email}");
+      return;
+    }
+
+    var cartData = cartSnapshot.data() as Map<String, dynamic>;
+    print("Cart data: $cartData");
+
+    if (cartData['products'] == null) {
+      print("No products found in cart data");
+      return;
+    }
+
+    var products = (cartData['products'] as List).map((product) {
+      print("Product data: $product");
+      return CartItem(
+        name: product['name'],
+        price: product['price'],
+        image: product['image'],
+        quantity: product['quantity'],
+      );
+    }).toList();
+
+    cartProvider.setCartItems(products);
+
+    int quantity = products.fold<int>(
+      0,
+          (previousValue, item) => previousValue + item.quantity,
+    );
+
+    setState(() {
+      totalQuantity = quantity;
+    });
+
+    print("Total quantity: $totalQuantity");
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,46 +135,35 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {},
             icon: Assets.icons.notification.svg(height: 24.0),
           ),
-          BlocBuilder<CheckoutBloc, CheckoutState>(
-            builder: (context, state) {
-              return state.maybeWhen(
-                loaded: (checkout, _, __, ___, ____, _____) {
-                  final totalQuantity = checkout.fold<int>(
-                    0,
-                    (previousValue, element) =>
-                        previousValue + element.quantity,
-                  );
-                  return totalQuantity > 0
-                      ? badges.Badge(
-                          badgeContent: Text(
-                            totalQuantity.toString(),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          child: IconButton(
-                            onPressed: () {
-                              context.goNamed(
-                                RouteConstants.cart,
-                                pathParameters: PathParameters().toMap(),
-                              );
-                            },
-                            icon: Assets.icons.cart.svg(height: 24.0),
-                          ),
-                        )
-                      : IconButton(
-                          onPressed: () {
-                            context.goNamed(
-                              RouteConstants.cart,
-                              pathParameters: PathParameters().toMap(),
-                            );
-                          },
-                          icon: Assets.icons.cart.svg(height: 24.0),
-                        );
-                },
-                orElse: () => const SizedBox.shrink(),
-              );
-            },
+          badges.Badge(
+            badgeContent: Text(
+              totalQuantity.toString(),
+              style: const TextStyle(color: Colors.white),
+            ),
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => KeranjangPage(),
+                    ),
+                );
+              },
+              icon: Assets.icons.cart.svg(height: 24.0),
+            ),
           ),
-          const SizedBox(width: 16.0),
+          //     : IconButton(
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => KeranjangPage(),
+          //       ),
+          //     );
+          //   },
+          //   icon: Assets.icons.cart.svg(height: 24.0),
+          // ),
+          SizedBox(width: 16.0),
         ],
       ),
       body: ListView(

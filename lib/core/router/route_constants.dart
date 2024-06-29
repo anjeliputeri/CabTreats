@@ -29,6 +29,10 @@ class RouteConstants {
   static const String cart = 'cart';
   static const String cartPath = 'cart';
 
+  /// route for page [KeranjangPage]
+  static const String keranjang = 'keranjang';
+  static const String keranjangPath = 'keranjang';
+
   /// route for page [AddressPage]
   static const String address = 'address';
   static const String addressPath = 'address';
