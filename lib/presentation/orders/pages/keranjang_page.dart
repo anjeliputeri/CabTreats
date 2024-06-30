@@ -146,41 +146,37 @@ class _KeranjangPageState extends State<KeranjangPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cart'),
-        actions: [
-          StreamBuilder<int>(
-            stream: cartTotalQuantityStream(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data == 0) {
-                return IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => KeranjangPage()),
-                    );
-                  },
-                  icon: Assets.icons.cart.svg(height: 24.0),
-                );
-              } else {
-                return badges.Badge(
-                  badgeContent: Text(
-                    snapshot.data.toString(),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => KeranjangPage()),
-                      );
-                    },
-                    icon: Assets.icons.cart.svg(height: 24.0),
-                  ),
-                );
-              }
-            },
-          ),
-          const SizedBox(width: 16.0),
-        ],
+        // actions: [
+        //   StreamBuilder<int>(
+        //     stream: cartTotalQuantityStream(),
+        //     builder: (context, snapshot) {
+        //       if (!snapshot.hasData || snapshot.data == 0) {
+        //         return IconButton(
+        //           onPressed: () {
+        //           },
+        //           icon: Assets.icons.cart.svg(height: 24.0),
+        //         );
+        //       } else {
+        //         return badges.Badge(
+        //           badgeContent: Text(
+        //             snapshot.data.toString(),
+        //             style: const TextStyle(color: Colors.white),
+        //           ),
+        //           child: IconButton(
+        //             onPressed: () {
+        //               Navigator.push(
+        //                 context,
+        //                 MaterialPageRoute(builder: (context) => KeranjangPage()),
+        //               );
+        //             },
+        //             icon: Assets.icons.cart.svg(height: 24.0),
+        //           ),
+        //         );
+        //       }
+        //     },
+        //   ),
+        //   const SizedBox(width: 16.0),
+        // ],
       ),
       body: _loading
           ? Center(child: CircularProgressIndicator())

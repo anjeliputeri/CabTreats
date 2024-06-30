@@ -11,14 +11,14 @@ import '../../../core/core.dart';
 import '../../orders/pages/keranjang_page.dart';
 import '../../orders/pages/order_detail_page.dart';
 
-class ProductCard extends StatefulWidget {
-  const ProductCard({Key? key}) : super(key: key);
+class CateringCard extends StatefulWidget {
+  const CateringCard({Key? key}) : super(key: key);
 
   @override
-  State<ProductCard> createState() => _ProductCorouselState();
+  State<CateringCard> createState() => _CateringCorouselState();
 }
 
-class _ProductCorouselState extends State<ProductCard> {
+class _CateringCorouselState extends State<CateringCard> {
   var db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
 
@@ -41,7 +41,7 @@ class _ProductCorouselState extends State<ProductCard> {
         }
         await cartDoc.update({'products': products});
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(existingProductIndex != -1 ? 'Kuantitas produk diperbarui' : 'Produk ditambahkan ke keranjang')),
+          SnackBar(content: Text(existingProductIndex != -1 ? 'Produk ditambahkan ke keranjang' : 'Produk ditambahkan ke keranjang')),
         );
       } else {
         await cartDoc.set({

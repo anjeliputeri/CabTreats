@@ -33,7 +33,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
   final List<String> categories = [
     'Catering & Snack',
-    'Bakery & Cake',
+    'Cake & Bakery',
     'Beverage',
     'Ice Cream',
   ];
