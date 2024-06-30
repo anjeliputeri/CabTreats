@@ -8,6 +8,7 @@ import 'package:flutter_onlineshop_app/presentation/home/widgets/product_card.da
 import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/pages/add_product_page.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/assets/assets.gen.dart';
@@ -37,7 +38,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late TextEditingController searchController;
   bool isSeller = false;
-  int totalQuantity = 28;
+  final user = FirebaseAuth.instance.currentUser;
 
   final List<String> banners1 = [
     Assets.images.banner1.path,
@@ -55,20 +56,13 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     searchController = TextEditingController();
     fetchUserRole();
-    fetchCartQuantity();
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
   }
 
   Future<void> fetchUserRole() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if(uid != null){
+    if (uid != null) {
       final userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      await FirebaseFirestore.instance.collection('users').doc(uid).get();
       final userRole = userDoc.data()?['role'] as String?;
       setState(() {
         isSeller = userRole == 'Seller';
@@ -76,54 +70,32 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> fetchCartQuantity() async {
-    var cartProvider = Provider.of<CartProvider>(context, listen: false);
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final cartSnapshot = await FirebaseFirestore.instance
+  Stream<int> cartTotalQuantityStream() {
+    return FirebaseFirestore.instance
         .collection('cart')
-        .doc(user.email)
-        .get();
-
-    if (!cartSnapshot.exists) {
-      print("No cart data found for user ${user.email}");
-      return;
-    }
-
-    var cartData = cartSnapshot.data() as Map<String, dynamic>;
-    print("Cart data: $cartData");
-
-    if (cartData['products'] == null) {
-      print("No products found in cart data");
-      return;
-    }
-
-    var products = (cartData['products'] as List).map((product) {
-      print("Product data: $product");
-      return CartItem(
+        .doc(user!.email)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists) {
+        return 0;
+      }
+      var cartData = snapshot.data() as Map<String, dynamic>;
+      var products = (cartData['products'] as List)
+          .map((product) => CartItem(
         name: product['name'],
         price: product['price'],
         image: product['image'],
         quantity: product['quantity'],
-      );
-    }).toList();
+      ))
+          .toList();
 
-    cartProvider.setCartItems(products);
-
-    int quantity = products.fold<int>(
-      0,
-          (previousValue, item) => previousValue + item.quantity,
-    );
-
-    setState(() {
-      totalQuantity = quantity;
+      int totalQuantity = 0;
+      for (var item in products) {
+        totalQuantity += item.quantity;
+      }
+      return totalQuantity;
     });
-
-    print("Total quantity: $totalQuantity");
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -135,35 +107,39 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {},
             icon: Assets.icons.notification.svg(height: 24.0),
           ),
-          badges.Badge(
-            badgeContent: Text(
-              totalQuantity.toString(),
-              style: const TextStyle(color: Colors.white),
-            ),
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => KeranjangPage(),
-                    ),
+          StreamBuilder<int>(
+            stream: cartTotalQuantityStream(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData || snapshot.data == 0) {
+                return IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => KeranjangPage()),
+                    );
+                  },
+                  icon: Assets.icons.cart.svg(height: 24.0),
                 );
-              },
-              icon: Assets.icons.cart.svg(height: 24.0),
-            ),
+              } else {
+                return badges.Badge(
+                  badgeContent: Text(
+                    snapshot.data.toString(),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => KeranjangPage()),
+                      );
+                    },
+                    icon: Assets.icons.cart.svg(height: 24.0),
+                  ),
+                );
+              }
+            },
           ),
-          //     : IconButton(
-          //   onPressed: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => KeranjangPage(),
-          //       ),
-          //     );
-          //   },
-          //   icon: Assets.icons.cart.svg(height: 24.0),
-          // ),
-          SizedBox(width: 16.0),
+          const SizedBox(width: 16.0),
         ],
       ),
       body: ListView(
@@ -200,16 +176,17 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       floatingActionButton: isSeller
-        ? FloatingActionButton(
-        onPressed: (){
+          ? FloatingActionButton(
+        onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => AddProductPage()),
+            context,
+            MaterialPageRoute(builder: (context) => AddProductPage()),
           );
         },
         backgroundColor: Theme.of(context).primaryColor,
         child: Icon(Icons.add, color: Colors.white),
       )
-      : null,
+          : null,
     );
   }
 }

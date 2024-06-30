@@ -28,8 +28,6 @@ class _KeranjangPageState extends State<KeranjangPage> {
   bool _loading = true;
   final user = FirebaseAuth.instance.currentUser;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -45,7 +43,7 @@ class _KeranjangPageState extends State<KeranjangPage> {
       if (!snapshot.exists) {
         return {
           "totalItem": "0",
-          "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp').format(0)
+          "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(0)
         };
       }
       var cartData = snapshot.data() as Map<String, dynamic>;
@@ -58,7 +56,6 @@ class _KeranjangPageState extends State<KeranjangPage> {
       ))
           .toList();
 
-      // Menghitung total harga
       int total = 0;
       for (var item in products) {
         total += item.price * item.quantity;
@@ -66,8 +63,35 @@ class _KeranjangPageState extends State<KeranjangPage> {
 
       return {
         "totalItem": (products.length).toString(),
-        "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp').format(total)
+        "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(total)
       };
+    });
+  }
+
+  Stream<int> cartTotalQuantityStream() {
+    return FirebaseFirestore.instance
+        .collection('cart')
+        .doc(user!.email)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists) {
+        return 0;
+      }
+      var cartData = snapshot.data() as Map<String, dynamic>;
+      var products = (cartData['products'] as List)
+          .map((product) => CartItem(
+        name: product['name'],
+        price: product['price'],
+        image: product['image'],
+        quantity: product['quantity'],
+      ))
+          .toList();
+
+      int totalQuantity = 0;
+      for (var item in products) {
+        totalQuantity += item.quantity;
+      }
+      return totalQuantity;
     });
   }
 
@@ -87,7 +111,6 @@ class _KeranjangPageState extends State<KeranjangPage> {
           .get();
 
       if (!doc.exists) {
-
       }
 
       var cartData = doc.data() as Map<String, dynamic>;
@@ -118,50 +141,44 @@ class _KeranjangPageState extends State<KeranjangPage> {
     }
   }
 
-  String _calculateTotal() {
-    int total = 0;
-    for (var item in _cartItems) {
-      total += item.price * item.quantity;
-    }
-    return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp').format(total);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final totalQuantity = _cartItems.fold<int>(
-      0,
-          (previousValue, element) => previousValue + element.quantity,
-    );
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cart'),
         actions: [
-          if (totalQuantity > 0)
-            badges.Badge(
-              badgeContent: Text(
-                totalQuantity.toString(),
-                style: const TextStyle(color: Colors.white),
-              ),
-              child: IconButton(
-                onPressed: () {
-                  context.goNamed(
-                    RouteConstants.cart,
-                    pathParameters: PathParameters().toMap(),
-                  );
-                },
-                icon: Assets.icons.cart.svg(height: 24.0),
-              ),
-            )
-          else
-            IconButton(
-              onPressed: () {
-                context.goNamed(
-                  RouteConstants.cart,
-                  pathParameters: PathParameters().toMap(),
+          StreamBuilder<int>(
+            stream: cartTotalQuantityStream(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData || snapshot.data == 0) {
+                return IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => KeranjangPage()),
+                    );
+                  },
+                  icon: Assets.icons.cart.svg(height: 24.0),
                 );
-              },
-              icon: Assets.icons.cart.svg(height: 24.0),
-            ),
+              } else {
+                return badges.Badge(
+                  badgeContent: Text(
+                    snapshot.data.toString(),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => KeranjangPage()),
+                      );
+                    },
+                    icon: Assets.icons.cart.svg(height: 24.0),
+                  ),
+                );
+              }
+            },
+          ),
           const SizedBox(width: 16.0),
         ],
       ),

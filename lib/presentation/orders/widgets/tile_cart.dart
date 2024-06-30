@@ -91,7 +91,9 @@ class _TileCartState extends State<TileCart> {
                           motion: const StretchMotion(),
                           children: [
                             SlidableAction(
-                              onPressed: (context) {},
+                              onPressed: (context) {
+                                cartProvider.deleteItem(index);
+                              },
                               backgroundColor: AppColors.primary.withOpacity(0.44),
                               foregroundColor: AppColors.red,
                               icon: Icons.delete_outlined,
