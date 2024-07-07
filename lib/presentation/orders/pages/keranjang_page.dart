@@ -2,6 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz_unsafe.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_onlineshop_app/presentation/address/pages/add_address.dart';
+import 'package:flutter_onlineshop_app/presentation/address/pages/address.dart';
+import 'package:flutter_onlineshop_app/presentation/auth/pages/login_page.dart';
+import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/widgets/cart_tile.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/widgets/tile_cart.dart';
 import 'package:badges/badges.dart' as badges;
@@ -15,7 +19,6 @@ import '../../../data/datasources/auth_local_datasource.dart';
 import '../models/model_cart.dart';
 import '../models/cart_item.dart';
 
-
 class KeranjangPage extends StatefulWidget {
   const KeranjangPage({super.key});
 
@@ -26,6 +29,7 @@ class KeranjangPage extends StatefulWidget {
 class _KeranjangPageState extends State<KeranjangPage> {
   List<CartItem> _cartItems = [];
   bool _loading = true;
+  bool _isSaving = false;
   final user = FirebaseAuth.instance.currentUser;
 
   @override
@@ -141,55 +145,79 @@ class _KeranjangPageState extends State<KeranjangPage> {
     }
   }
 
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
+  void _showWarningDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Warning"),
+            content: Text("There are no item in the cart. Please, add item before checkout"),
+            actions: [
+              TextButton(
+                  onPressed: (){
+                    Navigator.push(
+                        context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => HomePage(),
+                    ),
+                    );
+                  },
+                  child: Text('OK'),
+              ),
+            ],
+          );
+        },
+    );
+  }
+
+  void _showWarningLogin (BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Warning"),
+          content: Text("Please, login to proceed with checkout"),
+          actions: [
+            TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(
+                    builder: (context) => LoginPage(),
+                ),
+                );
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cart'),
-        // actions: [
-        //   StreamBuilder<int>(
-        //     stream: cartTotalQuantityStream(),
-        //     builder: (context, snapshot) {
-        //       if (!snapshot.hasData || snapshot.data == 0) {
-        //         return IconButton(
-        //           onPressed: () {
-        //           },
-        //           icon: Assets.icons.cart.svg(height: 24.0),
-        //         );
-        //       } else {
-        //         return badges.Badge(
-        //           badgeContent: Text(
-        //             snapshot.data.toString(),
-        //             style: const TextStyle(color: Colors.white),
-        //           ),
-        //           child: IconButton(
-        //             onPressed: () {
-        //               Navigator.push(
-        //                 context,
-        //                 MaterialPageRoute(builder: (context) => KeranjangPage()),
-        //               );
-        //             },
-        //             icon: Assets.icons.cart.svg(height: 24.0),
-        //           ),
-        //         );
-        //       }
-        //     },
-        //   ),
-        //   const SizedBox(width: 16.0),
-        // ],
       ),
       body: _loading
           ? Center(child: CircularProgressIndicator())
           : ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          // ListView.separated(
-          //   shrinkWrap: true,
-          //   physics: const NeverScrollableScrollPhysics(),
-          //   itemCount: 0,
-          //   itemBuilder: (context, index) => TileCart(),
-          //   separatorBuilder: (context, index) => SpaceHeight(16.0),
-          // ),
           TileCart(),
           const SpaceHeight(50.0),
           Row(
@@ -202,13 +230,6 @@ class _KeranjangPageState extends State<KeranjangPage> {
                 ),
               ),
               const Spacer(),
-              // Text(
-              //   _calculateTotal(),
-              //   style: const TextStyle(
-              //     fontSize: 16,
-              //     fontWeight: FontWeight.w600,
-              //   ),
-              // ),
               StreamBuilder<Map<String, String>>(
                 stream: cartTotalStream(),
                 builder: (context, snapshot) {
@@ -221,7 +242,6 @@ class _KeranjangPageState extends State<KeranjangPage> {
                   if (!snapshot.hasData) {
                     return const Text('No item in the cart');
                   }
-
                   String totalPrice = snapshot.data!['totalPrice']!;
 
                   return Text(
@@ -236,24 +256,6 @@ class _KeranjangPageState extends State<KeranjangPage> {
             ],
           ),
           const SpaceHeight(40.0),
-          // Button.filled(
-          //   onPressed: () async {
-          //     final isAuth = await AuthLocalDatasource().isAuth();
-          //     if (!isAuth) {
-          //       context.pushNamed(
-          //         RouteConstants.login,
-          //       );
-          //     } else {
-          //       context.goNamed(
-          //         RouteConstants.address,
-          //         pathParameters: PathParameters(
-          //           rootTab: RootTab.order,
-          //         ).toMap(),
-          //       );
-          //     }
-          //   },
-          //   label: 'Checkout (${_cartItems.length} items)',
-          // ),
           StreamBuilder<Map<String, String>>(
             stream: cartTotalStream(),
             builder: (context, snapshot) {
@@ -274,7 +276,7 @@ class _KeranjangPageState extends State<KeranjangPage> {
                       );
                     }
                   },
-                  label: 'Checkout (0 items)', // Default label saat loading
+                  label: 'Checkout (0 item)', // Default label saat loading
                 );
               }
               if (snapshot.hasError) {
@@ -282,19 +284,12 @@ class _KeranjangPageState extends State<KeranjangPage> {
                   onPressed: () async {
                     final isAuth = await AuthLocalDatasource().isAuth();
                     if (!isAuth) {
-                      context.pushNamed(
-                        RouteConstants.login,
-                      );
+                      _showWarningDialog(context);
                     } else {
-                      context.goNamed(
-                        RouteConstants.address,
-                        pathParameters: PathParameters(
-                          rootTab: RootTab.order,
-                        ).toMap(),
-                      );
+                      _showWarningLogin(context);
                     }
                   },
-                  label: 'Checkout (0 items)', // Default label saat error
+                  label: 'Checkout (0 item)', // Default label saat error
                 );
               }
               if (!snapshot.hasData || snapshot.data!['totalItem'] == '0') {
@@ -302,19 +297,12 @@ class _KeranjangPageState extends State<KeranjangPage> {
                   onPressed: () async {
                     final isAuth = await AuthLocalDatasource().isAuth();
                     if (!isAuth) {
-                      context.pushNamed(
-                        RouteConstants.login,
-                      );
+                      _showWarningDialog(context);
                     } else {
-                      context.goNamed(
-                        RouteConstants.address,
-                        pathParameters: PathParameters(
-                          rootTab: RootTab.order,
-                        ).toMap(),
-                      );
+                      _showWarningLogin(context);
                     }
                   },
-                  label: 'Checkout (0 items)', // Default label saat tidak ada produk
+                  label: 'Checkout (0 item)',
                 );
               }
 
@@ -323,16 +311,14 @@ class _KeranjangPageState extends State<KeranjangPage> {
                 onPressed: () async {
                   final isAuth = await AuthLocalDatasource().isAuth();
                   if (!isAuth) {
-                    context.pushNamed(
-                      RouteConstants.login,
+                    Navigator.push(
+                        context, MaterialPageRoute(
+                      builder:
+                          (context) => Address(),
+                    ),
                     );
                   } else {
-                    context.goNamed(
-                      RouteConstants.address,
-                      pathParameters: PathParameters(
-                        rootTab: RootTab.order,
-                      ).toMap(),
-                    );
+                    _showWarningLogin(context);
                   }
                 },
                 label: 'Checkout ($totalProducts items)',

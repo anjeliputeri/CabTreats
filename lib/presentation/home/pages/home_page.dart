@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/core/router/app_router.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/all_product/all_product_bloc.dart';
+import 'package:flutter_onlineshop_app/presentation/home/widgets/beverage_card.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/cake_card.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/catering_card.dart';
+import 'package:flutter_onlineshop_app/presentation/home/widgets/ice_cream_card.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/pages/add_product_page.dart';
 import 'package:go_router/go_router.dart';
@@ -180,7 +182,19 @@ class _HomePageState extends State<HomePage> {
           ),
           const SpaceHeight(12.0),
           CakeCard(),
-        const SpaceHeight(50.0),
+          const SpaceHeight(12.0),
+          TitleContent(
+            title: 'Beverage Menu',
+            onSeeAllTap: () {},
+          ),
+          BeverageCard(),
+          const SpaceHeight(12.0),
+          TitleContent(
+            title: 'Ice Cream Menu',
+            onSeeAllTap: () {},
+          ),
+          IceCreamCard(),
+          const SpaceHeight(50.0),
         ],
       ),
       floatingActionButton: isSeller

@@ -11,14 +11,14 @@ import '../../../core/core.dart';
 import '../../orders/pages/keranjang_page.dart';
 import '../../orders/pages/order_detail_page.dart';
 
-class CateringCard extends StatefulWidget {
-  const CateringCard({Key? key}) : super(key: key);
+class IceCreamCard extends StatefulWidget {
+  const IceCreamCard({Key? key}) : super(key: key);
 
   @override
-  State<CateringCard> createState() => _CateringCorouselState();
+  State<IceCreamCard> createState() => _CateringCorouselState();
 }
 
-class _CateringCorouselState extends State<CateringCard> {
+class _CateringCorouselState extends State<IceCreamCard> {
   var db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
 
@@ -81,7 +81,7 @@ class _CateringCorouselState extends State<CateringCard> {
         ],
       ),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: db.collection('Catering & Snack').snapshots(),
+        stream: db.collection('Ice Cream').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(

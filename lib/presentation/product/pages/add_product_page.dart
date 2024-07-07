@@ -68,7 +68,7 @@ class _AddProductPageState extends State<AddProductPage> {
   Future<void> _addProduct() async {
     if (nameController.text.isEmpty || priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
+        const SnackBar(content: Text('Please, fill in all fields')),
       );
       return;
     }

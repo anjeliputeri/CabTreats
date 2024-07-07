@@ -169,6 +169,8 @@ class _CateringCorouselState extends State<CakeCard> {
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/presentation/account/pages/account_page.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/logout_page.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
 
 import '../../../core/assets/assets.gen.dart';
 import '../../../core/constants/colors.dart';
@@ -23,7 +24,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final List<Widget> _pages = [
     const HomePage(),
     // const SearchPage(),
-    const CartPage(),
+    const KeranjangPage(),
     // const Center(
     //   child: Text('This Page 1'),
     // ),
