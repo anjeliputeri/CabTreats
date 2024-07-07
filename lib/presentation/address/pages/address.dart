@@ -66,18 +66,6 @@ class _AddressState extends State<Address> {
             return 0;
           });
 
-          if (addresses.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('No address found. Please, add an address'),
-                  const SizedBox(height: 16.0),
-                ],
-              ),
-            );
-          }
-
           return ListView.separated(
             padding: const EdgeInsets.all(20.0),
             itemCount: addresses.length + 1, // Tambahkan satu untuk tombol add address
@@ -90,16 +78,22 @@ class _AddressState extends State<Address> {
                 );
               } else {
                 // Menampilkan tombol add address
-                return Button.outlined(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddAddress(),
-                      ),
-                    );
-                  },
-                  label: 'Add address',
+                return Column(
+                  children: [
+                    Text('No address found. Please, add an address'),
+                    SizedBox(height: 24.0),
+                    Button.outlined(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddAddress(),
+                          ),
+                        );
+                      },
+                      label: 'Add address',
+                    ),
+                  ],
                 );
               }
             },

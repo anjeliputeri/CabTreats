@@ -86,7 +86,9 @@ class _AddAddressState extends State<AddAddress> {
           'phoneNumber': phoneNumberController.text,
           'posCode': posCode.text,
           'email': user.email,
-          'primaryAddress': isPrimaryAddress, // Set based on Switch value
+          'primaryAddress': isPrimaryAddress,
+          'province': strProvince.text,
+          'city': strCity.text,// Set based on Switch value
         });
 
         Navigator.of(context).pop();
