@@ -1,26 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_onlineshop_app/core/constants/variables.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/pages/cart_page.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/widgets/cart_tile.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/components/spaces.dart';
 import '../../../core/core.dart';
 import '../../orders/pages/keranjang_page.dart';
-import '../../orders/pages/order_detail_page.dart';
 
 class CateringCard extends StatefulWidget {
   const CateringCard({Key? key}) : super(key: key);
 
   @override
-  State<CateringCard> createState() => _CateringCorouselState();
+  State<CateringCard> createState() => _CateringCardState();
 }
 
-class _CateringCorouselState extends State<CateringCard> {
-  var db = FirebaseFirestore.instance;
+class _CateringCardState extends State<CateringCard> {
+  final db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
+  bool isSeller = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserRole();
+  }
 
   void addToCart(Map<String, dynamic> product) async {
     if (user != null) {
@@ -61,6 +64,17 @@ class _CateringCorouselState extends State<CateringCard> {
     }
   }
 
+  void fetchUserRole() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userRole = userDoc.data()?['role'] as String?;
+      setState(() {
+        isSeller = userRole == 'Seller';
+      });
+    }
+  }
+
   String formatPrice(int price) {
     return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
   }
@@ -69,19 +83,10 @@ class _CateringCorouselState extends State<CateringCard> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withOpacity(0.05),
-            blurRadius: 7.0,
-            spreadRadius: 0,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: db.collection('Catering & Snack').snapshots(),
+        stream: isSeller
+            ? db.collection('Catering & Snack').where('added_by', isEqualTo: user?.email).snapshots()
+            : db.collection('Catering & Snack').snapshots(), // Adjust query based on user role
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -94,34 +99,33 @@ class _CateringCorouselState extends State<CateringCard> {
             );
           }
 
-          var _data = snapshot.data!.docs;
+          var data = snapshot.data!.docs;
+          if (data.isEmpty) {
+            return Center(
+              child: Text(
+                'No product available',
+              ),
+            );
+          }
+
           return SizedBox(
             height: 230.0,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: _data.length,
+              itemCount: data.length,
               itemBuilder: (context, index) {
-                var product = _data[index].data();
+                var product = data[index].data();
                 var nama = product['name'];
                 var harga = product['price'];
                 var gambar = product['image'];
-
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     width: 150.0,
                     padding: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
+                      color: Colors.white,
                       borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.black.withOpacity(0.05),
-                          blurRadius: 7.0,
-                          spreadRadius: 0,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,15 +135,6 @@ class _CateringCorouselState extends State<CateringCard> {
                             borderRadius: BorderRadius.circular(5.0),
                             child: Stack(
                               children: [
-                                Shimmer.fromColors(
-                                  baseColor: Colors.grey.shade300,
-                                  highlightColor: Colors.grey.shade100,
-                                  child: Container(
-                                    width: 125.0,
-                                    height: 125.0,
-                                    color: Colors.white,
-                                  ),
-                                ),
                                 Image.network(
                                   gambar,
                                   width: 125.0,
@@ -192,7 +187,7 @@ class _CateringCorouselState extends State<CateringCard> {
                                     builder: (context) => KeranjangPage(),
                                   ),
                                 );
-                              },
+                                },
                               child: Container(
                                 padding: const EdgeInsets.all(4.0),
                                 decoration: BoxDecoration(
@@ -207,7 +202,7 @@ class _CateringCorouselState extends State<CateringCard> {
                                     ),
                                   ],
                                 ),
-                                child: Assets.icons.order.svg(),
+                                child: Assets.icons.order.svg(), // Replace with your add to cart icon or button
                               ),
                             ),
                           ],

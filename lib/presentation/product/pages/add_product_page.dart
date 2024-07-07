@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -88,12 +89,16 @@ class _AddProductPageState extends State<AddProductPage> {
       final String priceString = priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
       final int price = int.parse(priceString);
 
+      final user = FirebaseAuth.instance.currentUser;
+      final email = user?.email;
+
       final data = {
         'name': nameController.text,
         'price': price,
         'category': selectedCategory,
         'description': descriptionController.document.toDelta().toJson(),
         'image': imageUrl,
+        'added_by': email, // Add the email to the product data
       };
 
       await db.collection(selectedCategory).add(data);

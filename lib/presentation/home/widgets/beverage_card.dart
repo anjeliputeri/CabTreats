@@ -21,6 +21,24 @@ class BeverageCard extends StatefulWidget {
 class _CateringCorouselState extends State<BeverageCard> {
   var db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
+  bool isSeller = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserRole();
+  }
+
+  void fetchUserRole() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userRole = userDoc.data()?['role'] as String?;
+      setState(() {
+        isSeller = userRole == 'Seller';
+      });
+    }
+  }
 
   void addToCart(Map<String, dynamic> product) async {
     if (user != null) {
@@ -69,19 +87,10 @@ class _CateringCorouselState extends State<BeverageCard> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withOpacity(0.05),
-            blurRadius: 7.0,
-            spreadRadius: 0,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: db.collection('Beverage').snapshots(),
+        stream: isSeller
+            ? db.collection('Beverage').where('added_by', isEqualTo: user?.email).snapshots()
+            : db.collection('Beverage').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -94,34 +103,33 @@ class _CateringCorouselState extends State<BeverageCard> {
             );
           }
 
-          var _data = snapshot.data!.docs;
+          var data = snapshot.data!.docs;
+          if (data.isEmpty) {
+            return Center(
+              child: Text(
+                'No product available',
+              ),
+            );
+          }
+
           return SizedBox(
             height: 230.0,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: _data.length,
+              itemCount: data.length,
               itemBuilder: (context, index) {
-                var product = _data[index].data();
+                var product = data[index].data();
                 var nama = product['name'];
                 var harga = product['price'];
                 var gambar = product['image'];
-
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     width: 150.0,
                     padding: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
+                      color: Colors.white,
                       borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.black.withOpacity(0.05),
-                          blurRadius: 7.0,
-                          spreadRadius: 0,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
