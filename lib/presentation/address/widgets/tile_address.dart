@@ -61,11 +61,16 @@ class _TileAddressState extends State<TileAddress> {
             const SizedBox(height: 24.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                '${widget.addressData['name']} | ${widget.addressData['phoneNumber']}',
-                style: const TextStyle(
-                  fontSize: 16,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${widget.addressData['name']} | ${widget.addressData['phoneNumber']}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 4.0),
@@ -105,7 +110,26 @@ class _TileAddressState extends State<TileAddress> {
                 ),
               ),
             ),
-            const SizedBox(height: 24.0),
+            const SizedBox(height: 8.0),
+            if (widget.isPrimary && widget.addressData['primaryAddress'] == true)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                  child: const Text(
+                    'Primary',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.0,
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12.0),
             if (_isSelected) ...[
               const Divider(color: AppColors.primary),
               Center(

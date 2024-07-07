@@ -6,12 +6,14 @@ import 'package:flutter_onlineshop_app/presentation/address/pages/add_address.da
 import 'package:flutter_onlineshop_app/presentation/address/widgets/tile_address.dart';
 import 'package:go_router/go_router.dart';
 import 'package:collection/collection.dart'; // Import collection package
+import 'package:intl/intl.dart';
 
 import '../../../core/components/buttons.dart';
 import '../../../core/components/spaces.dart';
 import '../../../core/core.dart';
 import '../../../core/router/app_router.dart';
 import '../../home/bloc/checkout/checkout_bloc.dart';
+import '../../orders/models/cart_item.dart';
 
 class Address extends StatefulWidget {
   const Address({Key? key}) : super(key: key);
@@ -21,6 +23,42 @@ class Address extends StatefulWidget {
 }
 
 class _AddressState extends State<Address> {
+  Stream<Map<String, String>> cartTotalStream() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return FirebaseFirestore.instance
+        .collection('cart')
+        .doc(user!.email)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists) {
+        return {
+          "totalItem": "0",
+          "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(0)
+        };
+      }
+      var cartData = snapshot.data() as Map<String, dynamic>;
+      var products = (cartData['products'] as List)
+          .map((product) => CartItem(
+        name: product['name'],
+        price: product['price'],
+        image: product['image'],
+        quantity: product['quantity'],
+      ))
+          .toList();
+
+      int total = 0;
+      for (var item in products) {
+        total += item.price * item.quantity;
+      }
+
+      return {
+        "totalItem": (products.length).toString(),
+        "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(total)
+      };
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -56,7 +94,6 @@ class _AddressState extends State<Address> {
             return doc.data() as Map<String, dynamic>;
           }).toList() ?? [];
 
-          // Sort the addresses, putting primaryAddress at the top
           addresses.sort((a, b) {
             if (a['primaryAddress'] == true && b['primaryAddress'] != true) {
               return -1;
@@ -68,19 +105,18 @@ class _AddressState extends State<Address> {
 
           return ListView.separated(
             padding: const EdgeInsets.all(20.0),
-            itemCount: addresses.length + 1, // Tambahkan satu untuk tombol add address
+            itemCount: addresses.length + 1,
             itemBuilder: (context, index) {
               if (index < addresses.length) {
-                // Menampilkan tile address
                 return TileAddress(
                   addressData: addresses[index],
                   isPrimary: addresses[index]['primaryAddress'] == true,
                 );
               } else {
-                // Menampilkan tombol add address
                 return Column(
                   children: [
-                    Text('No address found. Please, add an address'),
+                    if (addresses.isEmpty)
+                      const Text('No address found. Please, add an address'),
                     SizedBox(height: 24.0),
                     Button.outlined(
                       onPressed: () {
@@ -97,7 +133,7 @@ class _AddressState extends State<Address> {
                 );
               }
             },
-            separatorBuilder: (context, index) => const SizedBox(height: 12.0), // SizedBox sebagai separator
+            separatorBuilder: (context, index) => const SizedBox(height: 12.0),
           );
         },
       ),
@@ -106,49 +142,71 @@ class _AddressState extends State<Address> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Subtotal (Estimate)',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                  ),
-                ),
-                BlocBuilder<CheckoutBloc, CheckoutState>(
-                  builder: (context, state) {
-                    final subtotal = state.maybeWhen(
-                      orElse: () => 0,
-                      loaded: (checkout, _, __, ___, ____, _____) {
-                        return checkout.fold<int>(
-                          0,
-                              (previousValue, element) =>
-                          previousValue +
-                              (element.quantity * element.product.price!),
-                        );
-                      },
-                    );
-                    return Text(
-                      subtotal.currencyFormatRp,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SpaceHeight(50.0),
-            Button.filled(
-              onPressed: () {
-                context.goNamed(
-                  RouteConstants.orderDetail,
-                  pathParameters: PathParameters(
-                    rootTab: RootTab.order,
-                  ).toMap(),
+            StreamBuilder<Map<String, String>>(
+              stream: cartTotalStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error'));
+                }
+                if (!snapshot.hasData) {
+                  return const Center(child: Text('No item in the cart'));
+                }
+
+                String totalPrice = snapshot.data!['totalPrice']!;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Subtotal (Estimate)',
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                    Text(
+                      totalPrice,
+                      style: const TextStyle(fontSize: 16.0),
+                    ),
+                  ],
                 );
               },
-              label: 'Continue',
+            ),
+            const SpaceHeight(50.0),
+            StreamBuilder<Map<String, String>>(
+              stream: cartTotalStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Button.filled(
+                    onPressed: () {},
+                    label: 'Continue',
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Button.filled(
+                    onPressed: () {},
+                    label: 'Continue',
+                  );
+                }
+                if (!snapshot.hasData) {
+                  return Button.filled(
+                    onPressed: () {},
+                    label: 'Continue',
+                  );
+                }
+
+                String totalItem = snapshot.data!['totalItem']!;
+                return Button.filled(
+                  onPressed: () {
+                    context.goNamed(
+                      RouteConstants.orderDetail,
+                      pathParameters: PathParameters(
+                        rootTab: RootTab.order,
+                      ).toMap(),
+                    );
+                  },
+                  label: 'Chekout ($totalItem items)',
+                );
+              },
             ),
           ],
         ),

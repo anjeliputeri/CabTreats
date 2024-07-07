@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_onlineshop_app/presentation/address/bloc/add_address/add
 import 'package:flutter_onlineshop_app/presentation/address/models/city_model.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../core/components/buttons.dart';
 import '../../../core/components/custom_dropdown.dart';
 import '../../../core/components/custom_text_field.dart';
@@ -28,7 +26,7 @@ import 'package:http/http.dart' as http;
 import '../models/province_model.dart';
 
 class AddAddress extends StatefulWidget {
-  const AddAddress ({super.key});
+  const AddAddress({super.key});
 
   @override
   State<AddAddress> createState() => _AddAddressState();
@@ -43,7 +41,7 @@ class _AddAddressState extends State<AddAddress> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  var strKey ='';
+  var strKey = '';
   var strProvince;
   var strCity;
 
@@ -51,7 +49,10 @@ class _AddAddressState extends State<AddAddress> {
     final user = _auth.currentUser;
 
     if (user != null) {
-      if (nameController.text.isEmpty || addressController.text.isEmpty || phoneNumberController.text.isEmpty || posCode.text.isEmpty) {
+      if (nameController.text.isEmpty ||
+          addressController.text.isEmpty ||
+          phoneNumberController.text.isEmpty ||
+          posCode.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please, fill in all fields')),
         );
@@ -87,8 +88,8 @@ class _AddAddressState extends State<AddAddress> {
           'posCode': posCode.text,
           'email': user.email,
           'primaryAddress': isPrimaryAddress,
-          'province': strProvince.text,
-          'city': strCity.text,// Set based on Switch value
+          'province': strProvince,
+          'city': strCity,
         });
 
         Navigator.of(context).pop();
@@ -115,7 +116,6 @@ class _AddAddressState extends State<AddAddress> {
       );
     }
   }
-
 
   void _showSuccessDialog() {
     showDialog(
@@ -191,12 +191,14 @@ class _AddAddressState extends State<AddAddress> {
                   showSearchBox: true,
                 ),
                 onChanged: (value) {
-                  strProvince = value?.provinceId;
+                  strProvince = value?.province;
                 },
                 itemAsString: (item) => "${item.province}",
                 asyncItems: (text) async {
-                  var response = await http.get(Uri.parse("https://api.rajaongkir.com/starter/province?key=${strKey}"));
-                  List allProvinsi = (jsonDecode(response.body) as Map<String, dynamic>)['rajaongkir']['results'];
+                  var response = await http.get(Uri.parse(
+                      "https://api.rajaongkir.com/starter/province?key=${strKey}"));
+                  List allProvinsi = (jsonDecode(response.body)
+                  as Map<String, dynamic>)['rajaongkir']['results'];
                   var dataProvinsi = ProvinceModel.fromJsonList(allProvinsi);
                   return dataProvinsi;
                 },
@@ -231,12 +233,14 @@ class _AddAddressState extends State<AddAddress> {
                       showSearchBox: true,
                     ),
                     onChanged: (value) {
-                      strCity = value?.cityId;
+                      strCity = "${value?.type} ${value?.cityName}";
                     },
                     itemAsString: (item) => "${item.type} ${item.cityName}",
                     asyncItems: (text) async {
-                      var response = await http.get(Uri.parse("https://api.rajaongkir.com/starter/city?key=${strKey}"));
-                      List allKota = (jsonDecode(response.body) as Map<String, dynamic>)['rajaongkir']['results'];
+                      var response = await http.get(Uri.parse(
+                          "https://api.rajaongkir.com/starter/city?key=${strKey}"));
+                      List allKota = (jsonDecode(response.body)
+                      as Map<String, dynamic>)['rajaongkir']['results'];
                       var dataKota = CityModel.fromJsonList(allKota);
                       return dataKota;
                     },
@@ -254,11 +258,13 @@ class _AddAddressState extends State<AddAddress> {
                         controller: phoneNumberController,
                         label: 'Phone Number',
                         onChanged: (value) {
-                          if (!value.startsWith('+62')){
+                          if (!value.startsWith('+62')) {
                             phoneNumberController.text = "+62" + value;
-                            phoneNumberController.selection = TextSelection.fromPosition(
-                              TextPosition(offset: phoneNumberController.text.length),
-                            );
+                            phoneNumberController.selection =
+                                TextSelection.fromPosition(
+                                  TextPosition(
+                                      offset: phoneNumberController.text.length),
+                                );
                           }
                         },
                       ),
@@ -266,34 +272,32 @@ class _AddAddressState extends State<AddAddress> {
                       Row(
                         children: [
                           Expanded(
-                              child: Text(
-                                'Set as a primary address',
-                                style: TextStyle(fontSize: 16),
-                              ),
+                            child: Text(
+                              'Set as a primary address',
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                           Switch(
-                              value: isPrimaryAddress,
-                              onChanged: (value) {
-                                setState(() {
-                                  isPrimaryAddress = value;
-                                });
-                              },
+                            value: isPrimaryAddress,
+                            onChanged: (value) {
+                              setState(() {
+                                isPrimaryAddress = value;
+                              });
+                            },
                           ),
                         ],
                       ),
-                      const SpaceHeight(12.0),
+                      const SpaceHeight(16.0),
                       Button.filled(
-                        onPressed: (){
-                          _saveAddress();
-                        },
+                        onPressed: _saveAddress,
                         label: 'Submit',
                       ),
                     ],
-                  ),
+                  )
                 ],
-              ),
+              )
             ],
-          ),
+          )
         ],
       ),
     );
