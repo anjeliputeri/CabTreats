@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/address/pages/add_address.dart';
 import 'package:flutter_onlineshop_app/presentation/address/widgets/tile_address.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/payment_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:collection/collection.dart'; // Import collection package
 import 'package:intl/intl.dart';
@@ -197,14 +198,14 @@ class _AddressState extends State<Address> {
                 String totalItem = snapshot.data!['totalItem']!;
                 return Button.filled(
                   onPressed: () {
-                    context.goNamed(
-                      RouteConstants.orderDetail,
-                      pathParameters: PathParameters(
-                        rootTab: RootTab.order,
-                      ).toMap(),
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PaymentPage()
+                        ),
                     );
                   },
-                  label: 'Chekout ($totalItem items)',
+                  label: 'Checkout ($totalItem items)',
                 );
               },
             ),
