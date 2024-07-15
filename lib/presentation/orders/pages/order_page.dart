@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/presentation/auth/pages/login_page.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/widgets/order_cart.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/widgets/tile_cart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/components/buttons.dart';
@@ -77,44 +76,19 @@ class _OrderPageState extends State<OrderPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Warning"),
-          content: Text("There are no items in the cart. Please, add items before checkout."),
+          title: const Text("Warning"),
+          content: const Text("There are no items in the cart. Please, add items before checkout."),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => HomePage(),
+                    builder: (context) => const HomePage(),
                   ),
                 );
               },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showWarningLogin(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Warning"),
-          content: Text("Please, login to proceed with checkout."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LoginPage(),
-                  ),
-                );
-              },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -129,144 +103,140 @@ class _OrderPageState extends State<OrderPage> {
         title: const Text('Order'),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
           OrderCart(), // Assuming this widget displays the list of order items
           const SpaceHeight(50.0),
-          Row(
-            children: [
-              const Text(
-                'Total',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              StreamBuilder<Map<String, String>>(
-                stream: orderTotalStream(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  if (snapshot.hasError) {
-                    return const Text('Error');
-                  }
-                  if (!snapshot.hasData) {
-                    return const Text('No item in the cart');
-                  }
-                  String totalPrice = snapshot.data!['totalPrice']!;
-
-                  return Text(
-                    totalPrice,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SpaceHeight(40.0),
-          StreamBuilder<Map<String, String>>(
-            stream: orderTotalStream(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Button.filled(
-                  onPressed: () async {
-                    final isAuth = await AuthLocalDatasource().isAuth();
-                    if (!isAuth) {
-                      context.pushNamed(RouteConstants.login);
-                    } else {
-                      context.goNamed(
-                        RouteConstants.address,
-                        pathParameters: PathParameters(
-                          rootTab: RootTab.order,
-                        ).toMap(),
-                      );
-                    }
-                  },
-                  label: 'Checkout (0 item)', // Default label saat loading
-                );
-              }
-              if (snapshot.hasError) {
-                return Button.filled(
-                  onPressed: () async {
-                    final isAuth = await AuthLocalDatasource().isAuth();
-                    if (!isAuth) {
-                      _showWarningDialog(context);
-                    } else {
-                      _showWarningLogin(context);
-                    }
-                  },
-                  label: 'Checkout (0 item)', // Default label saat error
-                );
-              }
-              if (!snapshot.hasData || snapshot.data!['totalItem'] == '0') {
-                return Button.filled(
-                  onPressed: () async {
-                    final isAuth = await AuthLocalDatasource().isAuth();
-                    if (!isAuth) {
-                      _showWarningDialog(context);
-                    } else {
-                      _showWarningLogin(context);
-                    }
-                  },
-                  label: 'Checkout (0 item)',
-                );
-              }
-
-              String totalProducts = snapshot.data!['totalItem']!;
-              return Button.filled(
-                onPressed: () async {
-                  final isAuth = await AuthLocalDatasource().isAuth();
-                  if (!isAuth) {
-                    context.pushNamed(RouteConstants.address);
-                  } else {
-                    _showWarningLogin(context);
-                  }
-                },
-                label: 'Checkout ($totalProducts items)',
-              );
-            },
-          ),
+          // Row(
+          //   children: [
+          //     const Text(
+          //       'Total',
+          //       style: TextStyle(
+          //         fontSize: 16,
+          //         fontWeight: FontWeight.w600,
+          //       ),
+          //     ),
+          //     const Spacer(),
+          //     StreamBuilder<Map<String, String>>(
+          //       stream: orderTotalStream(),
+          //       builder: (context, snapshot) {
+          //         if (snapshot.connectionState == ConnectionState.waiting) {
+          //           return const CircularProgressIndicator();
+          //         }
+          //         if (snapshot.hasError) {
+          //           return const Text('Error');
+          //         }
+          //         if (!snapshot.hasData) {
+          //           return const Text('No item in the cart');
+          //         }
+          //         String totalPrice = snapshot.data!['totalPrice']!;
+          //
+          //         return Text(
+          //           totalPrice,
+          //           style: const TextStyle(
+          //             fontSize: 16,
+          //             fontWeight: FontWeight.w600,
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //   ],
+          // ),
+          // const SpaceHeight(40.0),
+          // StreamBuilder<Map<String, String>>(
+          //   stream: orderTotalStream(),
+          //   builder: (context, snapshot) {
+          //     if (snapshot.connectionState == ConnectionState.waiting) {
+          //       return Button.filled(
+          //         onPressed: () async {
+          //           final isAuth = await AuthLocalDatasource().isAuth();
+          //           if (!isAuth) {
+          //             context.pushNamed(RouteConstants.login);
+          //           } else {
+          //             context.goNamed(
+          //               RouteConstants.address,
+          //               pathParameters: PathParameters(
+          //                 rootTab: RootTab.order,
+          //               ).toMap(),
+          //             );
+          //           }
+          //         },
+          //         label: 'Checkout (0 item)', // Default label saat loading
+          //       );
+          //     }
+          //     if (snapshot.hasError) {
+          //       return Button.filled(
+          //         onPressed: () async {
+          //           final isAuth = await AuthLocalDatasource().isAuth();
+          //           if (!isAuth) {
+          //             _showWarningDialog(context);
+          //           } else {
+          //             _showWarningLogin(context);
+          //           }
+          //         },
+          //         label: 'Checkout (0 item)', // Default label saat error
+          //       );
+          //     }
+          //     if (!snapshot.hasData || snapshot.data!['totalItem'] == '0') {
+          //       return Button.filled(
+          //         onPressed: () async {
+          //           final isAuth = await AuthLocalDatasource().isAuth();
+          //           if (!isAuth) {
+          //             _showWarningDialog(context);
+          //           } else {
+          //             _showWarningLogin(context);
+          //           }
+          //         },
+          //         label: 'Checkout (0 item)',
+          //       );
+          //     }
+          //
+          //     String totalProducts = snapshot.data!['totalItem']!;
+          //     return Button.filled(
+          //       onPressed: () async {
+          //         final isAuth = await AuthLocalDatasource().isAuth();
+          //         if (!isAuth) {
+          //           context.pushNamed(RouteConstants.address);
+          //         } else {
+          //           _showWarningLogin(context);
+          //         }
+          //       },
+          //       label: 'Checkout ($totalProducts items)',
+          //     );
+          //   },
+          // ),
         ],
       ),
     );
   }
 
-  Stream<Map<String, String>> orderTotalStream() {
-    return FirebaseFirestore.instance
-        .collection('orders')
-        .doc(user!.email)
-        .snapshots()
-        .map((snapshot) {
-      if (!snapshot.exists) {
-        return {
-          "totalItem": "0",
-          "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(0)
-        };
-      }
-      var cartData = snapshot.data() as Map<String, dynamic>;
-      var items = (cartData['user_orders'] as Map<String, dynamic>).values.expand((element) {
-        return (element['items'] as Map<String, dynamic>).values.map((item) => OrderItem(
-          name: item['name'],
-          price: item['price'],
-          image: item['image'],
-          quantity: item['quantity'],
-        ));
-      }).toList();
-
-      int total = items.fold(0, (previousValue, item) => previousValue + (item.price * item.quantity));
-
-      return {
-        "totalItem": items.length.toString(),
-        "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(total)
-      };
-    });
-  }
+  // Stream<Map<String, String>> orderTotalStream() {
+  //   final user = FirebaseAuth.instance.currentUser;
+  //
+  //   return FirebaseFirestore.instance
+  //       .collection('orders')
+  //       .doc(user!.email)
+  //       .collection('user_orders')
+  //       .snapshots()
+  //       .map((snapshot) {
+  //     var items = snapshot.docs.map((doc) {
+  //       var data = doc.data();
+  //       return (data['items'] as List).map((item) => OrderItem(
+  //         name: item['name'],
+  //         price: item['price'],
+  //         image: item['image'],
+  //         quantity: item['quantity'],
+  //       )).toList();
+  //     }).expand((element) => element).toList();
+  //
+  //     int total = items.fold(0, (previousValue, item) => previousValue + (item.price * item.quantity));
+  //
+  //     return {
+  //       "totalItem": items.length.toString(),
+  //       "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(total)
+  //     };
+  //   });
+  // }
 }
-

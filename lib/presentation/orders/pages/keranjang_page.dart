@@ -29,7 +29,6 @@ class KeranjangPage extends StatefulWidget {
 class _KeranjangPageState extends State<KeranjangPage> {
   List<CartItem> _cartItems = [];
   bool _loading = true;
-  bool _isSaving = false;
   final user = FirebaseAuth.instance.currentUser;
 
   @override

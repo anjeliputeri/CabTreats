@@ -78,7 +78,7 @@ class _OrderCartState extends State<OrderCart> {
             var item = orders[index];
             var totalPrice = item['price'] * item['quantity'];
             var date = (item['date'] as Timestamp).toDate();
-            var formattedDate = DateFormat('dd MMM yyyy HH:mm').format(date);
+            var formattedDate = DateFormat('dd MMM yyyy').format(date);
 
             return Padding(
               padding: const EdgeInsets.only(top: 5.0),
@@ -91,7 +91,6 @@ class _OrderCartState extends State<OrderCart> {
                     children: [
                       SlidableAction(
                         onPressed: (context) {
-                          // Implement delete action here
                         },
                         backgroundColor: AppColors.primary.withOpacity(0.44),
                         foregroundColor: AppColors.red,
@@ -151,12 +150,23 @@ class _OrderCartState extends State<OrderCart> {
                                 ),
                               ),
                               const SizedBox(height: 5.0),
-                              Text(
-                                item['name'],
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                              Row(
+                                children: [
+                                  Text(
+                                    item['name'],
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    item['quantity'].toString() + ' item',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 5.0),
                               Row(
