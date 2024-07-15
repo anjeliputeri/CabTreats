@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/presentation/account/pages/account_page.dart';
-import 'package:flutter_onlineshop_app/presentation/home/pages/logout_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
+import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/order_page.dart';
 
 import '../../../core/assets/assets.gen.dart';
 import '../../../core/constants/colors.dart';
-import '../../orders/pages/cart_page.dart';
-import 'home_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final int currentTab;
@@ -21,25 +20,20 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   late int _selectedIndex;
+
   final List<Widget> _pages = [
     const HomePage(),
-    // const SearchPage(),
-    const KeranjangPage(),
-    // const Center(
-    //   child: Text('This Page 1'),
-    // ),
-    // const Center(
-    //   child: Text('This Page 2'),
-    // ),
+    const OrderPage(),
     const Center(
-      child: Text('This Page 3'),
+      child: Text('Explore Page Content'),
     ),
     const AccountPage(),
   ];
 
   void _onItemTapped(int index) {
-    _selectedIndex = index;
-    setState(() {});
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override

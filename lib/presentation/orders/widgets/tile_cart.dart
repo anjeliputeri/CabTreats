@@ -33,7 +33,7 @@ class _TileCartState extends State<TileCart> {
       );
     }
 
-    print("Current user email: ${user.email}");
+    // print("Current user email: ${user.email}");
 
     return ChangeNotifierProvider(
       create: (_) => CartProvider(),
