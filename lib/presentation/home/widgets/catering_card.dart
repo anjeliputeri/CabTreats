@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_onlineshop_app/presentation/product/pages/detail_product.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/components/spaces.dart';
@@ -44,7 +45,7 @@ class _CateringCardState extends State<CateringCard> {
         }
         await cartDoc.update({'products': products});
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(existingProductIndex != -1 ? 'Produk ditambahkan ke keranjang' : 'Produk ditambahkan ke keranjang')),
+          SnackBar(content: Text('Produk ditambahkan ke keranjang')),
         );
       } else {
         await cartDoc.set({
@@ -120,94 +121,104 @@ class _CateringCardState extends State<CateringCard> {
                 var gambar = product['image'];
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 150.0,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(5.0),
-                            child: Stack(
-                              children: [
-                                Image.network(
-                                  gambar,
-                                  width: 125.0,
-                                  height: 125.0,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Shimmer.fromColors(
-                                      baseColor: Colors.grey.shade300,
-                                      highlightColor: Colors.grey.shade100,
-                                      child: Container(
-                                        width: 125.0,
-                                        height: 125.0,
-                                        color: Colors.white,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailProduct(product: product),
                         ),
-                        const SpaceHeight(14.0),
-                        Text(
-                          nama ?? 'Cookies',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              harga != null ? formatPrice(harga) : 'Rp 10.000',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                addToCart(product);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => KeranjangPage(),
+                      );
+                    },
+                    child: Container(
+                      width: 150.0,
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5.0),
+                              child: Stack(
+                                children: [
+                                  Image.network(
+                                    gambar,
+                                    width: 125.0,
+                                    height: 125.0,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Shimmer.fromColors(
+                                        baseColor: Colors.grey.shade300,
+                                        highlightColor: Colors.grey.shade100,
+                                        child: Container(
+                                          width: 125.0,
+                                          height: 125.0,
+                                          color: Colors.white,
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                                },
-                              child: Container(
-                                padding: const EdgeInsets.all(4.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(50.0),
-                                  color: AppColors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.black.withOpacity(0.1),
-                                      blurRadius: 10.0,
-                                      offset: const Offset(0, 2),
-                                      blurStyle: BlurStyle.outer,
-                                    ),
-                                  ],
-                                ),
-                                child: Assets.icons.order.svg(), // Replace with your add to cart icon or button
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                          const SpaceHeight(14.0),
+                          Text(
+                            nama ?? 'Cookies',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                harga != null ? formatPrice(harga) : 'Rp 10.000',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  addToCart(product);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => KeranjangPage(),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(4.0),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(50.0),
+                                    color: AppColors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.black.withOpacity(0.1),
+                                        blurRadius: 10.0,
+                                        offset: const Offset(0, 2),
+                                        blurStyle: BlurStyle.outer,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Assets.icons.order.svg(), // Replace with your add to cart icon or button
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );

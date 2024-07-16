@@ -18,6 +18,10 @@ import '../../../core/assets/assets.gen.dart';
 import '../../../core/components/search_input.dart';
 import '../../../core/components/spaces.dart';
 import '../../../data/models/responses/product_response_model.dart';
+import '../../category/presentation/beverage_category.dart';
+import '../../category/presentation/cake_category.dart';
+import '../../category/presentation/catering_category.dart';
+import '../../category/presentation/ice_category.dart';
 import '../../orders/models/cart_item.dart';
 import '../../orders/models/cart_provider.dart';
 import '../bloc/best_seller_product/best_seller_product_bloc.dart';
@@ -171,27 +175,55 @@ class _HomePageState extends State<HomePage> {
           const SpaceHeight(12.0),
           TitleContent(
             title: 'Catering & Snack Menu',
-            onSeeAllTap: () {},
+            onSeeAllTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder:
+                    (context) => CateringCategory(),
+                ),
+              );
+            },
           ),
           const SpaceHeight(12.0),
           CateringCard(),
           const SpaceHeight(12.0),
           TitleContent(
             title: 'Cake & Bakery Menu',
-            onSeeAllTap: () {},
+            onSeeAllTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder:
+                    (context) => CakeCategory(),
+                ),
+              );
+            },
           ),
           const SpaceHeight(12.0),
           CakeCard(),
           const SpaceHeight(12.0),
           TitleContent(
             title: 'Beverage Menu',
-            onSeeAllTap: () {},
+            onSeeAllTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder:
+                    (context) => BeverageCategory(),
+                ),
+              );
+            },
           ),
           BeverageCard(),
           const SpaceHeight(12.0),
           TitleContent(
             title: 'Ice Cream Menu',
-            onSeeAllTap: () {},
+            onSeeAllTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder:
+                    (context) => IceCreamCategory(),
+                ),
+              );
+            },
           ),
           IceCreamCard(),
           const SpaceHeight(50.0),

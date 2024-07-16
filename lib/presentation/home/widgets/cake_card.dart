@@ -10,6 +10,7 @@ import '../../../core/components/spaces.dart';
 import '../../../core/core.dart';
 import '../../orders/pages/keranjang_page.dart';
 import '../../orders/pages/order_detail_page.dart';
+import '../../product/pages/detail_product.dart';
 
 class CakeCard extends StatefulWidget {
   const CakeCard({Key? key}) : super(key: key);
@@ -124,6 +125,15 @@ class _CateringCorouselState extends State<CakeCard> {
                 var gambar = product['image'];
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailProduct(product: product),
+                        ),
+                      );
+                    },
                   child: Container(
                     width: 150.0,
                     padding: const EdgeInsets.all(8.0),
@@ -222,6 +232,7 @@ class _CateringCorouselState extends State<CakeCard> {
                         ),
                       ],
                     ),
+                  ),
                   ),
                 );
               },

@@ -1,26 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_onlineshop_app/core/constants/variables.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/pages/cart_page.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/widgets/cart_tile.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
+import 'package:flutter_onlineshop_app/presentation/product/pages/detail_product.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/components/spaces.dart';
 import '../../../core/core.dart';
 import '../../orders/pages/keranjang_page.dart';
-import '../../orders/pages/order_detail_page.dart';
-import '../../product/pages/detail_product.dart';
+import 'package:badges/badges.dart' as badges;
 
-class IceCreamCard extends StatefulWidget {
-  const IceCreamCard({Key? key}) : super(key: key);
+class CakeCategory extends StatefulWidget {
+  const CakeCategory({Key? key}) : super(key: key);
 
   @override
-  State<IceCreamCard> createState() => _CateringCorouselState();
+  State<CakeCategory> createState() => _CakeCategoryState();
 }
 
-class _CateringCorouselState extends State<IceCreamCard> {
-  var db = FirebaseFirestore.instance;
+class _CakeCategoryState extends State<CakeCategory> {
+  final db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
   bool isSeller = false;
 
@@ -49,7 +47,7 @@ class _CateringCorouselState extends State<IceCreamCard> {
         }
         await cartDoc.update({'products': products});
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(existingProductIndex != -1 ? 'Produk ditambahkan ke keranjang' : 'Produk ditambahkan ke keranjang')),
+          SnackBar(content: Text('Produk ditambahkan ke keranjang')),
         );
       } else {
         await cartDoc.set({
@@ -84,14 +82,80 @@ class _CateringCorouselState extends State<IceCreamCard> {
     return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
   }
 
+  Stream<int> cartTotalQuantityStream() {
+    return FirebaseFirestore.instance
+        .collection('cart')
+        .doc(user!.email)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists) {
+        return 0;
+      }
+      var cartData = snapshot.data() as Map<String, dynamic>;
+      var products = (cartData['products'] as List)
+          .map((product) => CartItem(
+        name: product['name'],
+        price: product['price'],
+        image: product['image'],
+        quantity: product['quantity'],
+      ))
+          .toList();
+
+      int totalQuantity = 0;
+      for (var item in products) {
+        totalQuantity += item.quantity;
+      }
+      return totalQuantity;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Cake & Bakery'),
+        actions: [
+          StreamBuilder<int>(
+            stream: cartTotalQuantityStream(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData || snapshot.data == 0) {
+                return IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => KeranjangPage()),
+                    );
+                  },
+                  icon: Assets.icons.cart.svg(height: 24.0),
+                );
+              } else {
+                return badges.Badge(
+                  badgeContent: Text(
+                    snapshot.data.toString(),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => KeranjangPage()),
+                      );
+                    },
+                    icon: Assets.icons.cart.svg(height: 24.0),
+                  ),
+                );
+              }
+            },
+          ),
+          const SizedBox(width: 16.0),
+        ],
+      ),
+      body: Container(
       padding: const EdgeInsets.all(8.0),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: isSeller
-            ? db.collection('Ice Cream').where('added_by', isEqualTo: user?.email).snapshots()
-            : db.collection('Ice Cream').snapshots(),
+            ? db.collection('Cake & Bakery').where('added_by', isEqualTo: user?.email).snapshots()
+            : db.collection('Cake & Bakery').snapshots(), // Adjust query based on user role
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -113,29 +177,31 @@ class _CateringCorouselState extends State<IceCreamCard> {
             );
           }
 
-          return SizedBox(
-            height: 230.0,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GridView.builder(
               itemCount: data.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Number of cards per row
+                childAspectRatio: 3 / 4, // Aspect ratio of each card
+                mainAxisSpacing: 8.0, // Spacing between rows
+                crossAxisSpacing: 16.0, // Spacing between columns
+              ),
               itemBuilder: (context, index) {
                 var product = data[index].data();
                 var nama = product['name'];
                 var harga = product['price'];
                 var gambar = product['image'];
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetailProduct(product: product),
-                        ),
-                      );
-                    },
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetailProduct(product: product),
+                      ),
+                    );
+                  },
                   child: Container(
-                    width: 150.0,
                     padding: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -149,18 +215,9 @@ class _CateringCorouselState extends State<IceCreamCard> {
                             borderRadius: BorderRadius.circular(5.0),
                             child: Stack(
                               children: [
-                                Shimmer.fromColors(
-                                  baseColor: Colors.grey.shade300,
-                                  highlightColor: Colors.grey.shade100,
-                                  child: Container(
-                                    width: 125.0,
-                                    height: 125.0,
-                                    color: Colors.white,
-                                  ),
-                                ),
                                 Image.network(
                                   gambar,
-                                  width: 125.0,
+                                  width: double.infinity,
                                   height: 125.0,
                                   fit: BoxFit.cover,
                                   loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
@@ -169,7 +226,7 @@ class _CateringCorouselState extends State<IceCreamCard> {
                                       baseColor: Colors.grey.shade300,
                                       highlightColor: Colors.grey.shade100,
                                       child: Container(
-                                        width: 125.0,
+                                        width: double.infinity,
                                         height: 125.0,
                                         color: Colors.white,
                                       ),
@@ -225,7 +282,7 @@ class _CateringCorouselState extends State<IceCreamCard> {
                                     ),
                                   ],
                                 ),
-                                child: Assets.icons.order.svg(),
+                                child: Assets.icons.order.svg(), // Replace with your add to cart icon or button
                               ),
                             ),
                           ],
@@ -233,12 +290,12 @@ class _CateringCorouselState extends State<IceCreamCard> {
                       ],
                     ),
                   ),
-                  ),
                 );
               },
             ),
           );
         },
+      ),
       ),
     );
   }
