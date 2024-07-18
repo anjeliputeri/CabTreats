@@ -4,12 +4,19 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_onlineshop_app/core/constants/colors.dart';
 import 'package:flutter_onlineshop_app/data/models/responses/address_response_model.dart';
 import 'package:flutter_onlineshop_app/data/models/responses/subdistrict_response_model.dart';
 import 'package:flutter_onlineshop_app/presentation/address/bloc/add_address/add_address_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/address/models/city_model.dart';
+import 'package:flutter_onlineshop_app/presentation/address/pages/address_state.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+// import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
+import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
 import '../../../core/components/buttons.dart';
 import '../../../core/components/custom_dropdown.dart';
 import '../../../core/components/custom_text_field.dart';
@@ -33,6 +40,8 @@ class AddAddress extends StatefulWidget {
 }
 
 class _AddAddressState extends State<AddAddress> {
+  var controller = Get.put(AddressStateController());
+
   final nameController = TextEditingController();
   final addressController = TextEditingController();
   final phoneNumberController = TextEditingController();
@@ -44,6 +53,10 @@ class _AddAddressState extends State<AddAddress> {
   var strKey = '';
   var strProvince;
   var strCity;
+
+  double? selectedLatitude;
+  double? selectedLongitude;
+  Map<String, dynamic>? selectedAddress;
 
   void _saveAddress() async {
     final user = _auth.currentUser;
@@ -80,7 +93,6 @@ class _AddAddressState extends State<AddAddress> {
           });
         });
 
-        // Save new address with primaryAddress set accordingly
         await FirebaseFirestore.instance.collection('address').add({
           'name': nameController.text,
           'address': addressController.text,
@@ -90,6 +102,9 @@ class _AddAddressState extends State<AddAddress> {
           'primaryAddress': isPrimaryAddress,
           'province': strProvince,
           'city': strCity,
+          'latitude': selectedLatitude,
+          'longitude': selectedLongitude,
+          'pickedAddress': selectedAddress,
         });
 
         Navigator.of(context).pop();
@@ -101,6 +116,9 @@ class _AddAddressState extends State<AddAddress> {
         posCode.clear();
         strProvince = null;
         strCity = null;
+        selectedLatitude = null;
+        selectedLongitude = null;
+        selectedAddress = null;
         setState(() {
           isPrimaryAddress = false;
         });
@@ -146,25 +164,51 @@ class _AddAddressState extends State<AddAddress> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Add Address'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          CustomTextField(
-            controller: nameController,
-            label: 'Name',
-          ),
-          const SpaceHeight(24.0),
-          CustomTextField(
-            controller: addressController,
-            label: 'Address',
-          ),
-          const SpaceHeight(24.0),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                height: 400,
+                child: Center(
+                      child: OpenStreetMapSearchAndPick(
+                          buttonColor: AppColors.primary,
+                          buttonText: 'Set Current Location',
+                          locationPinIconColor: AppColors.primary,
+                          locationPinTextStyle: TextStyle(color: AppColors.primary),
+                          onPicked: (pickedData) {
+                            print("adresssss-----");
+                            setState(() {
+                              selectedLatitude = pickedData.latLong.latitude;
+                              selectedLongitude = pickedData.latLong.longitude;
+                              selectedAddress = pickedData.address;
+                            });
+                            print("------------------adresss-----------------------");
+                            print(pickedData.latLong.latitude);
+                            print(pickedData.latLong.longitude);
+                            print(pickedData.address);
+                          })
+
+                ),
+              ),
+              const SpaceHeight(24.0),
+              CustomTextField(
+                controller: nameController,
+                label: 'Name',
+              ),
+              const SpaceHeight(24.0),
+              CustomTextField(
+                controller: addressController,
+                label: 'Address',
+              ),
+              const SpaceHeight(24.0),
               const Text(
                 'Province',
                 style: TextStyle(

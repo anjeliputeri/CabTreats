@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_onlineshop_app/presentation/account/pages/add_account.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/order_page.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/core.dart';
@@ -20,47 +22,43 @@ class AccountPage extends StatelessWidget {
           ListTile(
             leading: Assets.icons.user.svg(),
             title: const Text(
-              'Profil',
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: Assets.icons.bag.svg(),
-            title: const Text(
-              'Pesanan',
+              'Profile',
               style: TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w700,
               ),
             ),
             onTap: () {
-              context.pushNamed(
-                RouteConstants.orderList,
-                pathParameters: PathParameters(
-                  rootTab: RootTab.account,
-                ).toMap(),
+              Navigator.push(
+                  context,
+              MaterialPageRoute(
+                  builder: (context) => AddAccount(),
+              ),
               );
             },
           ),
           ListTile(
-            leading: Assets.icons.location.svg(),
+            leading: Assets.icons.bag.svg(),
             title: const Text(
-              'Alamat',
+              'Order',
               style: TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                  context,
+              MaterialPageRoute(builder:
+              (context) => OrderPage(),
+              ),
+              );
+            },
           ),
           ListTile(
             leading: Assets.icons.creditcard.svg(),
             title: const Text(
-              'Pembayaran',
+              'Payment',
               style: TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w700,

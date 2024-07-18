@@ -54,6 +54,10 @@ dependencies:
   provider: ^6.1.2
   shared_preferences: ^2.2.2
   shimmer: ^3.0.0
+  get: any
+  flutter_osm_plugin: any
+  fluttertoast: any
+  open_street_map_search_and_pick: ^0.1.0
 
 dev_dependencies:
   build_runner: ^2.4.8
