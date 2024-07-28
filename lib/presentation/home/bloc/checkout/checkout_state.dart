@@ -10,11 +10,12 @@ class CheckoutState with _$CheckoutState {
   //           "payment_va_name":"bri",
   const factory CheckoutState.loaded(
     List<ProductQuantity> products,
-    int addressId,
+    String addressId,
     String paymentMethod,
     String shippingService,
     int shippingCost,
     String paymentVaName,
+    int subTotalPrice,
   ) = _Loaded;
   const factory CheckoutState.error(String message) = _Error;
 }

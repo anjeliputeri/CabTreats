@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/payment_page.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/address/models/address_model.dart';
@@ -10,7 +11,6 @@ import '../../presentation/auth/pages/login_page.dart';
 import '../../presentation/auth/pages/register_page.dart';
 import '../../presentation/home/pages/dashboard_page.dart';
 import '../../presentation/intro/splash_page.dart';
-import '../../presentation/orders/pages/cart_page.dart';
 import '../../presentation/orders/pages/history_order_page.dart';
 import '../../presentation/orders/pages/order_detail_page.dart';
 import '../../presentation/orders/pages/payment_detail_page.dart';
@@ -77,9 +77,9 @@ class AppRouter {
             builder: (context, state) => const HistoryOrderPage(),
           ),
           GoRoute(
-            name: RouteConstants.cart,
-            path: RouteConstants.cartPath,
-            builder: (context, state) => const CartPage(),
+            name: RouteConstants.keranjang,
+            path: RouteConstants.keranjangPath,
+            builder: (context, state) => const KeranjangPage(),
             routes: [
               GoRoute(
                 name: RouteConstants.orderDetail,
@@ -87,9 +87,9 @@ class AppRouter {
                 builder: (context, state) => const OrderDetailPage(),
                 routes: [
                   GoRoute(
-                    name: RouteConstants.paymentDetail,
-                    path: RouteConstants.paymentDetailPath,
-                    builder: (context, state) => const PaymentDetailPage(),
+                    name: RouteConstants.payment,
+                    path: RouteConstants.paymentPath,
+                    builder: (context, state) => const PaymentPage(),
                     routes: [
                       GoRoute(
                         name: RouteConstants.paymentWaiting,
@@ -103,7 +103,7 @@ class AppRouter {
                         name: RouteConstants.trackingOrder,
                         path: RouteConstants.trackingOrderPath,
                         builder: (context, state) {
-                          final args = state.extra as int;
+                          final args = state.extra as String;
                           return TrackingOrderPage(orderId: args);
                         } ,
                         routes: [

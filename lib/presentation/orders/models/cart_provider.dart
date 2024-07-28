@@ -56,6 +56,7 @@ extension on CartItem {
       'price': price,
       'image': image,
       'quantity': quantity,
+      'added_by': addedBy,
     };
   }
 }

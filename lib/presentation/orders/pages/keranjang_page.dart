@@ -51,14 +51,14 @@ class _KeranjangPageState extends State<KeranjangPage> {
         };
       }
       var cartData = snapshot.data() as Map<String, dynamic>;
-      var products = (cartData['products'] as List)
-          .map((product) =>
-          CartItem(
-            name: product['name'],
-            price: product['price'],
-            image: product['image'],
-            quantity: product['quantity'],
-          ))
+      var products =(cartData['products'] as List)
+          .map((product) => CartItem(
+        name: product['name'],
+        price: product['price'],
+        image: product['image'],
+        quantity: product['quantity'],
+        addedBy: product['added_by'],
+      ))
           .toList();
 
       int total = 0;
@@ -85,13 +85,13 @@ class _KeranjangPageState extends State<KeranjangPage> {
       }
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
-          .map((product) =>
-          CartItem(
-            name: product['name'],
-            price: product['price'],
-            image: product['image'],
-            quantity: product['quantity'],
-          ))
+          .map((product) => CartItem(
+        name: product['name'],
+        price: product['price'],
+        image: product['image'],
+        quantity: product['quantity'],
+        addedBy: product['added_by'],
+      ))
           .toList();
 
       int totalQuantity = 0;
@@ -122,14 +122,13 @@ class _KeranjangPageState extends State<KeranjangPage> {
 
       var cartData = doc.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
-          .map((product) =>
-      {
-        "name": product['name'],
-        "price": product['price'],
-        "image": product['image'],
-        "quantity": product['quantity'],
-        "added_by": product['added_by'] // Capture the added_by field separately
-      })
+          .map((product) => CartItem(
+        name: product['name'],
+        price: product['price'],
+        image: product['image'],
+        quantity: product['quantity'],
+        addedBy: product['added_by'],
+      ))
           .toList();
 
       setState(() {

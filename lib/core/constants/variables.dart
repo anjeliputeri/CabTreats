@@ -3,5 +3,5 @@ class Variables {
 
   static const String baseUrlImage = '$baseUrl/storage/products/';
 
-  static const String rajaOngkirKey = 'a9da3c4359fafde97f03ee2be60147b2';
+  static const String rajaOngkirKey = 'c364bc54969f4a3b67bc4fec31e84bab';
 }

@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../core/core.dart';
 
 class TileAddress extends StatefulWidget {
   final Map<String, dynamic> addressData;
   final bool isPrimary;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final VoidCallback onEditTap;
 
   const TileAddress({
     Key? key,
     required this.addressData,
     this.isPrimary = false,
+    this.isSelected = false,
+    required this.onTap,
+    required this.onEditTap,
   }) : super(key: key);
 
   @override
@@ -22,7 +29,7 @@ class _TileAddressState extends State<TileAddress> {
   @override
   void initState() {
     super.initState();
-    _isSelected = widget.isPrimary && widget.addressData['primaryAddress'] == true;
+    _isSelected = widget.isSelected;
   }
 
   @override
@@ -35,9 +42,7 @@ class _TileAddressState extends State<TileAddress> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _isSelected = !_isSelected;
-        });
+        // print("tapped bro");
       },
       child: Container(
         decoration: BoxDecoration(
@@ -75,9 +80,7 @@ class _TileAddressState extends State<TileAddress> {
             ),
             const SizedBox(height: 4.0),
             GestureDetector(
-              onTap: () {
-                print('Row tapped!');
-              },
+              onTap: () {},
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
@@ -94,8 +97,9 @@ class _TileAddressState extends State<TileAddress> {
                     const SizedBox(width: 14.0),
                     GestureDetector(
                       onTap: () {
+                        widget.onTap();
                         setState(() {
-                          _isSelected = !_isSelected;
+                          _isSelected = widget.isSelected;
                         });
                         print('Radio button tapped! Selected: $_isSelected');
                       },

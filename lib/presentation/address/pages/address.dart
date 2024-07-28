@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_onlineshop_app/data/models/responses/order_detail_response_model.dart';
+import 'package:flutter_onlineshop_app/presentation/address/bloc/address/address_bloc.dart';
 import 'package:flutter_onlineshop_app/core/constants/colors.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/order_detail_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
 import 'package:intl/intl.dart';
 
@@ -19,6 +22,7 @@ class Address extends StatefulWidget {
 }
 
 class _AddressState extends State<Address> {
+  String selectedAddressId = "";
   String _deliveryMethod = 'Pick Up';
 
   Stream<Map<String, String>> cartTotalStream() {
@@ -32,17 +36,19 @@ class _AddressState extends State<Address> {
       if (!snapshot.exists) {
         return {
           "totalItem": "0",
-          "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(0)
+          "totalPrice":
+              NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(0)
         };
       }
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
           .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-      ))
+                name: product['name'],
+                price: product['price'],
+                image: product['image'],
+                quantity: product['quantity'],
+                addedBy: product['added_by'],
+              ))
           .toList();
 
       int total = 0;
@@ -50,9 +56,17 @@ class _AddressState extends State<Address> {
         total += item.price * item.quantity;
       }
 
+      context.read<CheckoutBloc>().add(
+            CheckoutEvent.addSubTotalPrice(
+              total,
+            ),
+          );
+
       return {
         "totalItem": (products.length).toString(),
-        "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(total)
+        "totalPrice": NumberFormat.currency(
+                locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+            .format(total)
       };
     });
   }
@@ -171,55 +185,97 @@ class _AddressState extends State<Address> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
-                var addresses = snapshot.data?.docs.map((doc) {
-                  return doc.data() as Map<String, dynamic>;
-                }).toList() ?? [];
+          var addresses = snapshot.data?.docs.map((doc) {
+                var data = doc.data() as Map<String, dynamic>;
+                data['id'] = doc.id;
+                return data;
+              }).toList() ??
+              [];
 
-                addresses.sort((a, b) {
-                  if (a['primaryAddress'] == true && b['primaryAddress'] != true) {
-                    return -1;
-                  } else if (a['primaryAddress'] != true && b['primaryAddress'] == true) {
-                    return 1;
-                  }
-                  return 0;
-                });
+          addresses.sort((a, b) {
+            if (a['primaryAddress'] == true && b['primaryAddress'] != true) {
+              return -1;
+            } else if (a['primaryAddress'] != true &&
+                b['primaryAddress'] == true) {
+              return 1;
+            }
+            return 0;
+          });
 
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                  itemCount: addresses.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index < addresses.length) {
-                      return TileAddress(
-                        addressData: addresses[index],
-                        isPrimary: addresses[index]['primaryAddress'] == true,
-                      );
-                    } else {
-                      return Column(
-                        children: [
-                          if (addresses.isEmpty)
-                            const Text('No address found. Please, add an address'),
-                          SizedBox(height: 24.0),
-                          Button.outlined(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const AddAddress(),
-                                ),
-                              );
-                            },
-                            label: 'Add address',
-                          ),
-                        ],
-                      );
-                    }
-                  },
-                  separatorBuilder: (context, index) => const SizedBox(height: 12.0),
-                );
+          if (selectedAddressId == "") {
+            for (var address in addresses) {
+              if (address['primaryAddress'] == true) {
+                selectedAddressId = address['id'];
+                break;
+              }
+            }
+          }
+
+          return BlocBuilder<CheckoutBloc, CheckoutState>(
+              builder: (context, state) {
+            final addressId = state.maybeWhen(
+              orElse: () => 0,
+              loaded: (checkout, addressId, __, ___, ____, _____, ______) {
+                print("addressId: $addressId");
+                return addressId;
               },
-            ),
-          ),
-        ],
+            );
+
+            return ListView.separated(
+              padding: const EdgeInsets.all(20.0),
+              itemCount: addresses.length + 1,
+              itemBuilder: (context, index) {
+                if (index < addresses.length) {
+                  return TileAddress(
+                    addressData: addresses[index],
+                    isPrimary: addresses[index]['primaryAddress'] == true,
+                    isSelected: addresses[index]['id'] == selectedAddressId,
+                    onEditTap: () {},
+                    onTap: () {
+                      print("tapped : ${addresses[index]['id']}");
+                      print("address_id: $addressId");
+                      setState(() {
+                        selectedAddressId = addresses[index]['id'];
+                      });
+                      context.read<CheckoutBloc>().add(
+                            CheckoutEvent.addAddressId(
+                              addresses[index]['id'],
+                            ),
+                          );
+                      context.read<CheckoutBloc>().add(
+                            CheckoutEvent.addShippingService(
+                              "",
+                              0,
+                            ),
+                          );
+                    },
+                  );
+                } else {
+                  return Column(
+                    children: [
+                      if (addresses.isEmpty)
+                        const Text('No address found. Please, add an address'),
+                      SizedBox(height: 24.0),
+                      Button.outlined(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AddAddress(),
+                            ),
+                          );
+                        },
+                        label: 'Add address',
+                      ),
+                    ],
+                  );
+                }
+              },
+              separatorBuilder: (context, index) =>
+                  const SizedBox(height: 12.0),
+            );
+          });
+        },
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -240,6 +296,7 @@ class _AddressState extends State<Address> {
                 }
 
                 String totalPrice = snapshot.data!['totalPrice']!;
+
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -279,17 +336,32 @@ class _AddressState extends State<Address> {
                 }
 
                 String totalItem = snapshot.data!['totalItem']!;
-                return Button.filled(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PaymentPage(),
-                      ),
-                    );
-                  },
-                  label: 'Checkout ($totalItem items)',
-                );
+                return BlocBuilder<CheckoutBloc, CheckoutState>(
+                    builder: (context, state) {
+                  final address = state.maybeWhen(
+                    orElse: () => "",
+                    loaded: (_, addressId, __, ___, ____, _____, ______) {
+                      return addressId;
+                    },
+                  );
+                  return Button.filled(
+                    onPressed: () {
+                      if (address == "") {
+                        context.read<CheckoutBloc>().add(
+                              CheckoutEvent.addAddressId(
+                                selectedAddressId,
+                              ),
+                            );
+                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => OrderDetailPage()),
+                      );
+                    },
+                    label: 'Checkout ($totalItem items)',
+                  );
+                });
               },
             ),
           ],

@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/core/constants/variables.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/pages/cart_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/widgets/cart_tile.dart';
 import 'package:shimmer/shimmer.dart';
 

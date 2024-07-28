@@ -9,6 +9,8 @@ import 'package:badges/badges.dart' as badges;
 import 'package:flutter_onlineshop_app/presentation/product/pages/product_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/pages/product_seller.dart';
 import 'package:get/get.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+
 import '../../orders/pages/keranjang_page.dart';
 
 class DetailProduct extends StatefulWidget {
@@ -23,11 +25,20 @@ class DetailProduct extends StatefulWidget {
 class _DetailProductState extends State<DetailProduct> {
   final db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
+  quill.QuillController? _controller;
 
-  @override
+   @override
   void initState() {
     super.initState();
+    final doc = quill.Document.fromJson(widget.product['description']);
+    setState(() {
+      _controller =  quill.QuillController(
+            document: doc,
+            selection: TextSelection.collapsed(offset: 0),
+          );
+    });
   }
+
 
   String formatPrice(int price) {
     return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
@@ -49,6 +60,7 @@ class _DetailProductState extends State<DetailProduct> {
         price: product['price'],
         image: product['image'],
         quantity: product['quantity'],
+        addedBy: product['added_by'],
       ))
           .toList();
 
@@ -318,11 +330,9 @@ class _DetailProductState extends State<DetailProduct> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(fontSize: 12),
-                ),
+                child: quill.QuillEditor.basic(configurations: quill.QuillEditorConfigurations(
+                  controller: _controller!
+                  ),)
               ),
               SizedBox(height: 24),
               Padding(

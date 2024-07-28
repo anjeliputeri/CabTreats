@@ -25,7 +25,7 @@ class AddressResponseModel {
 }
 
 class Address {
-    final int? id;
+    final String? id;
     final String? name;
     final String? fullAddress;
     final String? phone;

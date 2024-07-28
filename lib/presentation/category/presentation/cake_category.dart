@@ -98,6 +98,7 @@ class _CakeCategoryState extends State<CakeCategory> {
         price: product['price'],
         image: product['image'],
         quantity: product['quantity'],
+        addedBy: product['added_by'],
       ))
           .toList();
 

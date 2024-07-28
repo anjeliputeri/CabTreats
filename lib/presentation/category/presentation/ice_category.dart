@@ -98,6 +98,7 @@ class _IceCreamCategoryState extends State<IceCreamCategory> {
         price: product['price'],
         image: product['image'],
         quantity: product['quantity'],
+        addedBy: product['added_by'],
       ))
           .toList();
 

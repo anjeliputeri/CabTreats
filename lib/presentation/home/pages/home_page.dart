@@ -93,6 +93,7 @@ class _HomePageState extends State<HomePage> {
         price: product['price'],
         image: product['image'],
         quantity: product['quantity'],
+        addedBy: product['added_by'],
       ))
           .toList();
 

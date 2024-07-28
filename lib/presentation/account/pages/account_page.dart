@@ -17,6 +17,13 @@ import 'bank_page.dart';
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
 
+  //  SizedBox(height: 8),
+  //                                 Text('Status: ${order['status']}'),
+  //                                 SizedBox(height: 8),
+  //                                 Text('Item: ${order['itemCount']} item yang dibeli'),
+  //                                 SizedBox(height: 8),
+  //                                 Text('Harga: IDR ${NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(order['price'])}'),
+
   @override
   State<AccountPage> createState() => _AccountPageState();
 }

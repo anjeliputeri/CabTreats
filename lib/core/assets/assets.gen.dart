@@ -94,12 +94,13 @@ class $AssetsImagesGen {
 
   $AssetsImagesBanksGen get banks => const $AssetsImagesBanksGen();
 
-  /// File path: assets/images/banner1.png
+  /// File path: assets/images/banner1.jpg
   AssetGenImage get banner1 => const AssetGenImage('assets/images/banner1.jpg');
 
-  /// File path: assets/images/banner2.png
+  /// File path: assets/images/banner2.jpg
   AssetGenImage get banner2 => const AssetGenImage('assets/images/banner2.jpg');
 
+  /// File path: assets/images/banner3.jpg
   AssetGenImage get banner3 => const AssetGenImage('assets/images/banner3.jpg');
 
   $AssetsImagesCategoriesGen get categories =>
@@ -111,6 +112,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/oops.png
   AssetGenImage get oops => const AssetGenImage('assets/images/oops.png');
 
+  /// File path: assets/images/payment.png
+  AssetGenImage get payment => const AssetGenImage('assets/images/payment.png');
+
   /// File path: assets/images/process-order.png
   AssetGenImage get processOrder =>
       const AssetGenImage('assets/images/process-order.png');
@@ -119,7 +123,7 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<AssetGenImage> get values =>
-      [banner1, banner2, google, oops, processOrder];
+      [banner1, banner2, banner3, google, oops, payment, processOrder];
 }
 
 class $AssetsImagesBanksGen {
@@ -144,24 +148,48 @@ class $AssetsImagesCategoriesGen {
   const $AssetsImagesCategoriesGen();
 
   /// File path: assets/images/categories/menu-bestseller.png
+  AssetGenImage get menuBestseller =>
+      const AssetGenImage('assets/images/categories/menu-bestseller.png');
+
+  /// File path: assets/images/categories/menu-beverage.png
+  AssetGenImage get menuBeverage =>
+      const AssetGenImage('assets/images/categories/menu-beverage.png');
+
+  /// File path: assets/images/categories/menu-cake.png
+  AssetGenImage get menuCake =>
+      const AssetGenImage('assets/images/categories/menu-cake.png');
+
+  /// File path: assets/images/categories/menu-catering.png
   AssetGenImage get menuCatering =>
       const AssetGenImage('assets/images/categories/menu-catering.png');
 
   /// File path: assets/images/categories/menu-flashsale.png
-  AssetGenImage get menuCake =>
-      const AssetGenImage('assets/images/categories/menu-cake.png');
+  AssetGenImage get menuFlashsale =>
+      const AssetGenImage('assets/images/categories/menu-flashsale.png');
 
-  /// File path: assets/images/categories/menu-more.png
-  AssetGenImage get menuBeverage =>
-      const AssetGenImage('assets/images/categories/menu-beverage.png');
-
-  /// File path: assets/images/categories/menu-toprated.png
+  /// File path: assets/images/categories/menu-ice-cream.png
   AssetGenImage get menuIceCream =>
       const AssetGenImage('assets/images/categories/menu-ice-cream.png');
 
+  /// File path: assets/images/categories/menu-more.png
+  AssetGenImage get menuMore =>
+      const AssetGenImage('assets/images/categories/menu-more.png');
+
+  /// File path: assets/images/categories/menu-toprated.png
+  AssetGenImage get menuToprated =>
+      const AssetGenImage('assets/images/categories/menu-toprated.png');
+
   /// List of all assets
-  List<AssetGenImage> get values =>
-      [menuCatering, menuCake, menuBeverage, menuIceCream];
+  List<AssetGenImage> get values => [
+        menuBestseller,
+        menuBeverage,
+        menuCake,
+        menuCatering,
+        menuFlashsale,
+        menuIceCream,
+        menuMore,
+        menuToprated
+      ];
 }
 
 class $AssetsImagesProductsGen {

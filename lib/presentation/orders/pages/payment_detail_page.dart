@@ -183,6 +183,17 @@ class PaymentDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.goNamed(
+                RouteConstants.cart,
+                pathParameters: PathParameters().toMap(),
+              );
+            },
+            icon: const Icon(Icons.shopping_cart),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(20.0),
@@ -233,7 +244,7 @@ class PaymentDetailPage extends StatelessWidget {
             builder: (context, state) {
               final paymentVaName = state.maybeWhen(
                 orElse: () => '',
-                loaded: (_, __, ___, ____, _____, paymentVaName) =>
+                loaded: (_, __, ___, ____, _____, paymentVaName, ______) =>
                     paymentVaName,
               );
               return ListView.separated(
@@ -280,7 +291,7 @@ class PaymentDetailPage extends StatelessWidget {
                 builder: (context, state) {
                   final subtotal = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (products, _, __, ___, ____, ______) =>
+                    loaded: (products, _, __, ___, ____, ______, _____) =>
                         products.fold<int>(
                       0,
                       (previousValue, element) =>
@@ -312,7 +323,7 @@ class PaymentDetailPage extends StatelessWidget {
                 builder: (context, state) {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (_, __, ___, ____, shippingCost, ______) =>
+                    loaded: (_, __, ___, ____, shippingCost, ______, _______) =>
                         shippingCost,
                   );
                   return Text(
@@ -341,7 +352,7 @@ class PaymentDetailPage extends StatelessWidget {
                 builder: (context, state) {
                   final total = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (products, _, __, ___, shippingCost, ______) =>
+                    loaded: (products, _, __, ___, shippingCost, ______, _______) =>
                         products.fold<int>(
                           0,
                           (previousValue, element) =>
@@ -365,35 +376,35 @@ class PaymentDetailPage extends StatelessWidget {
             builder: (context, state) {
               final paymentMethod = state.maybeWhen(
                 orElse: () => '',
-                loaded: (_, __, paymentMethod, ___, ____, ______) =>
-                    paymentMethod,
+                loaded: (_, __, paymentMethod, ___, ____, ______, _______) =>
+                    paymentMethod
               );
               final shippingService = state.maybeWhen(
                 orElse: () => '',
-                loaded: (_, __, ___, shippingService, ____, ______) =>
+                loaded: (_, __, ___, shippingService, ____, ______, _______) =>
                     shippingService,
               );
 
               final shippingCost = state.maybeWhen(
                 orElse: () => 0,
-                loaded: (_, __, ___, ____, shippingCost, ______) =>
+                loaded: (_, __, ___, ____, shippingCost, ______, _______) =>
                     shippingCost,
               );
 
               final paymentVaName = state.maybeWhen(
                 orElse: () => '',
-                loaded: (_, __, ___, ____, _____, paymentVaName) =>
+                loaded: (_, __, ___, ____, _____, paymentVaName, ______) =>
                     paymentVaName,
               );
 
               final products = state.maybeWhen(
                 orElse: () => [],
-                loaded: (products, _, __, ___, ____, ______) => products,
+                loaded: (products, _, __, ___, ____, ______, _______) => products,
               );
 
               final addressId = state.maybeWhen(
                 orElse: () => 0,
-                loaded: (_, addressId, __, ___, ____, ______) => addressId,
+                loaded: (_, addressId, __, ___, ____, ______, _______) => addressId,
               );
 
               return BlocListener<OrderBloc, OrderState>(
@@ -425,7 +436,7 @@ class PaymentDetailPage extends StatelessWidget {
                           disabled: paymentMethod == '',
                           onPressed: () {
                             context.read<OrderBloc>().add(OrderEvent.doOrder(
-                                addressId: addressId,
+                                addressId: 0,
                                 paymentMethod: paymentMethod,
                                 shippingService: shippingService,
                                 shippingCost: shippingCost,

@@ -1,8 +1,19 @@
+import 'dart:convert';
+import 'dart:ffi';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/core/core.dart';
+import 'package:flutter_onlineshop_app/data/models/requests/courier_cost_request_model.dart';
+import 'package:flutter_onlineshop_app/data/models/responses/courier_cost_response_model.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/bloc/cost/cost_bloc.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/widgets/tile_cart.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../core/assets/assets.gen.dart';
 import '../../../core/components/buttons.dart';
@@ -22,6 +33,11 @@ class OrderDetailPage extends StatefulWidget {
 }
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
+  List<CartItem> _cartItems = [];
+  bool _loading = true;
+  final user = FirebaseAuth.instance.currentUser;
+  var subtotal = 0;
+
   @override
   void initState() {
     context.read<CostBloc>().add(CostEvent.getCost(
@@ -33,6 +49,46 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     super.initState();
   }
 
+  Stream<Map<String, String>> cartTotalStream() {
+    return FirebaseFirestore.instance
+        .collection('cart')
+        .doc(user!.email)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists) {
+        return {
+          "totalItem": "0",
+          "totalPrice":
+              NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(0)
+        };
+      }
+
+      var cartData = snapshot.data() as Map<String, dynamic>;
+
+      var products = (cartData['products'] as List)
+          .map((product) => CartItem(
+                name: product['name'],
+                price: product['price'],
+                image: product['image'],
+                quantity: product['quantity'],
+                addedBy: product['added_by'],
+              ))
+          .toList();
+
+      int total = 0;
+      for (var item in products) {
+        total += item.price * item.quantity;
+      }
+
+      return {
+        "totalItem": (products.length).toString(),
+        "totalPrice": NumberFormat.currency(
+                locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+            .format(total)
+      };
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,10 +98,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           IconButton(
             onPressed: () {
               context.goNamed(
-                RouteConstants.cart,
-                pathParameters: PathParameters(
-                  rootTab: RootTab.order,
-                ).toMap(),
+                RouteConstants.keranjang,
+                pathParameters: PathParameters().toMap(),
               );
             },
             icon: Assets.icons.cart.svg(height: 24.0),
@@ -55,26 +109,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          BlocBuilder<CheckoutBloc, CheckoutState>(
-            builder: (context, state) {
-              return state.maybeWhen(
-                orElse: () {
-                  return const SizedBox();
-                },
-                loaded: (products, _, __, ___, ____, _____) {
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) => CartTile(
-                     ),
-                    separatorBuilder: (context, index) =>
-                        const SpaceHeight(16.0),
-                  );
-                },
-              );
-            },
-          ),
+          TileCart(),
           const SpaceHeight(36.0),
           const _SelectShipping(),
           // const _ShippingSelected(),
@@ -98,21 +133,26 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 ),
               ),
               const Spacer(),
-              BlocBuilder<CheckoutBloc, CheckoutState>(
-                builder: (context, state) {
-                  final total = state.maybeWhen(
-                    orElse: () => 0,
-                    loaded: (products, _, __, ___, ____, _____) {
-                      return products.fold<int>(
-                          0,
-                          (previousValue, element) =>
-                              previousValue +
-                              (element.product.price! * element.quantity));
-                    },
-                  );
+              StreamBuilder<Map<String, String>>(
+                stream: cartTotalStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return const Text('Error');
+                  }
+                  if (!snapshot.hasData) {
+                    return const Text('No item in the cart');
+                  }
+                  String totalPrice = snapshot.data!['totalPrice']!;
+                  subtotal =
+                      int.parse(totalPrice.split('Rp ')[1].replaceAll('.', ''));
+
                   return Text(
-                    total.currencyFormatRp,
+                    totalPrice,
                     style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   );
@@ -134,7 +174,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 builder: (context, state) {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (_, __, ___, ____, shippingCost, ______) {
+                    loaded: (_, __, ___, ____, shippingCost, ______, _______) {
                       return shippingCost;
                     },
                   );
@@ -149,6 +189,39 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             ],
           ),
           const SpaceHeight(8.0),
+          Row(
+            children: [
+              const Text(
+                'Pilihan Kurir',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              BlocBuilder<CheckoutBloc, CheckoutState>(
+                builder: (context, state) {
+                  final shippingCost = state.maybeWhen(
+                    orElse: () => 0,
+                    loaded: (_, __, ___, ____, shippingCost, ______, _______) {
+                      return shippingCost;
+                    },
+                  );
+                  final shippingProvider = state.maybeWhen(
+                    orElse: () => '',
+                    loaded: (_, __, ___, shipperName, _____, ______, _______) {
+                      return shipperName;
+                    },
+                  );
+                  return Text(
+                    shippingProvider,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           const Divider(),
           const SpaceHeight(24.0),
           Row(
@@ -164,34 +237,45 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 builder: (context, state) {
                   final total = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (products, _, __, ___, shippingCost, ______) {
-                      return products.fold<int>(
-                              0,
-                              (previousValue, element) =>
-                                  previousValue +
-                                  (element.product.price! * element.quantity)) +
-                          shippingCost;
+                    loaded: (products, addressId, __, ___, shippingCost, ______,
+                        total) {
+                      return shippingCost + total;
                     },
                   );
-                  return Text(
-                    total.currencyFormatRp,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
+                  return Column(
+                    children: [
+                      Text(
+                        total.currencyFormatRp,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
             ],
           ),
           const SpaceHeight(20.0),
-          Button.filled(
-            onPressed: () {
-              context.goNamed(
-                RouteConstants.paymentDetail,
-                pathParameters: PathParameters().toMap(),
+          BlocBuilder<CheckoutBloc, CheckoutState>(
+            builder: (context, state) {
+              final shippingCost = state.maybeWhen(
+              orElse: () => 0,
+              loaded: (_, ___, __, shippingService, shippingCost, _____, ______) {
+                return shippingCost;
+              },
+            );
+              return Button.filled(
+                disabled: shippingCost == 0,
+                onPressed: () {
+                  context.goNamed(
+                    RouteConstants.payment,
+                    pathParameters: PathParameters().toMap(),
+                  );
+                },
+                label: 'Lanjut Bayar',
               );
-            },
-            label: 'Pilih Pembayaran',
+            }
           ),
         ],
       ),
@@ -207,31 +291,198 @@ class _SelectShipping extends StatefulWidget {
 }
 
 class _SelectShippingState extends State<_SelectShipping> {
+  List<CourierCost> courierCostList = [];
+  bool isLoading = false;
+  List<CartItem> _cartItems = [];
+  bool isCourierFetched = false;
+  bool _loading = true;
+
+  @override
+  initState() {
+    super.initState();
+    _initialize();  
+  }
+
+
+   Future<void> _initialize() async {
+    await _loadCart();
+     final addressId = context.read<CheckoutBloc>().state.maybeWhen(
+        orElse: () => "",
+        loaded: (_, addressId, __, ___, ____, _____, ______) {
+          return addressId;
+        });
+
+    DocumentSnapshot addressSnapshot = await FirebaseFirestore.instance
+        .collection('address')
+        .doc(addressId)
+        .get();
+    
+    if (addressSnapshot.exists) {
+      var addressData = addressSnapshot.data() as Map<String, dynamic>;
+      var destinationLatitude = addressData['latitude'].toString();
+      var destinationLongitude = addressData['longitude'].toString();
+      _fetchCourierCosts(destinationLatitude, destinationLongitude);
+    }
+  }
+
+  Future<void> _loadCart() async {
+  print("-------load cart----------");
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    print("User is not logged in");
+    return;
+  }
+
+  print("email--------");
+  print(user.email);
+
+  setState(() {
+    _loading = true;
+  });
+
+  try {
+    print("get data cart using ${user.email}");
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('cart')
+        .doc(user.email)
+        .get();
+
+    if (!doc.exists) {
+      print("document not found");
+      setState(() {
+        _loading = false;
+      });
+      return;
+    }
+
+    print("document found");
+
+    var cartData = doc.data() as Map<String, dynamic>;
+    var products = (cartData['products'] as List).map((product) {
+      return CartItem(
+        name: product['name'],
+        price: product['price'],
+        image: product['image'],
+        quantity: product['quantity'],
+        addedBy: product['added_by'],
+      );
+    }).toList();
+
+    print("get data from firebase");
+
+    for (var item in products) {
+      print('Name: ${item.name}');
+      print('-------------------------');
+    }
+
+    setState(() {
+      _cartItems = products.cast<CartItem>();
+      _loading = false;
+    });
+  } catch (e) {
+    print("Error loading cart: $e");
+    setState(() {
+      _loading = false;
+    });
+  }
+}
+
+
+  Future<List<CourierCost>> checkCourierCost(
+      CourierCostRequestModel requestModel) async {
+    final url = Uri.parse('https://api.biteship.com/v1/rates/couriers');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization':
+            'biteship_test.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdGluZyIsInVzZXJJZCI6IjY2OThkOGQ2Y2U1MGNmMDAxMjU5OWI0MiIsImlhdCI6MTcyMTQ4NTQ5NX0.Aah5_jvzMG_6P7dNIT98IIVr0bo9vrWcDXC-9p81dKc'
+      },
+      body: jsonEncode(requestModel.toJson()),
+    );
+
+    print("courier request body-----");
+
+    print(jsonEncode(requestModel.toJson()));
+
+    if (response.statusCode == 200) {
+      print("-------fetch courier response 200----------");
+      final data = jsonDecode(response.body);
+      List<dynamic> pricingList = data['pricing'];
+      print(data['pricing']);
+      return pricingList.map((json) => CourierCost.fromJson(json)).toList();
+    } else {
+      print("-------fetch courier response failed----------");
+      print(response.body);
+      // Handle error response
+      throw Exception('Failed to load pricing');
+    }
+  }
+
+  Future<void> _fetchCourierCosts(String destinationLatitude, String destinationLongitude) async {
+    // await _loadCart();
+
+    print("-------fetch courier----------");
+
+    final orderItems = CartItem.convertCartItemsToOrderItems(_cartItems, 200);
+    print(_cartItems.length);
+    print(orderItems.length);
+    String vendorEmail = orderItems[0].vendorEmail;
+    print(vendorEmail);
+    print("convert cart items to order item");
+    
+
+    DocumentSnapshot vendorSnapshot = await FirebaseFirestore.instance
+        .collection('accounts')
+        .doc(vendorEmail)
+        .get();
+
+    if (vendorSnapshot.exists) {
+      var vendorData = vendorSnapshot.data() as Map<String, dynamic>;
+      var originLatitude = vendorData['latitude'].toString();
+      var originLongitude = vendorData['longitude'].toString();
+
+      try {
+        print("call api courier");
+
+        print("dest lat: ${destinationLatitude}");
+        print("dest long: ${destinationLongitude}");
+        print("vendor email: $vendorEmail");
+        print("origin lat: ${originLatitude}");
+        print("origin long: ${originLongitude}");
+        final courierCostRequest = CourierCostRequestModel(
+            originLatitude: originLatitude,
+            originLongitude: originLongitude,
+            destinationLatitude: destinationLatitude,
+            destinationLongitude: destinationLongitude,
+            courier: "grab,gojek",
+            orderItems: orderItems);
+        List<CourierCost> costs = await checkCourierCost(courierCostRequest);
+        for (var item in costs) {
+          print('Courier: ${item.company}');
+          print('Cost: ${item.price}');
+          print('-------------------------');
+        }
+        setState(() {
+          courierCostList = costs;
+          isLoading = false;
+          isCourierFetched = true;
+        });
+      } catch (e) {
+        print(e);
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else {
+      print('Vendor data not found');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final selectedPayment = ValueNotifier<int>(0);
-    // final shippings = [
-    //   ShippingModel(
-    //     type: 'Reguler',
-    //     priceStart: 20000,
-    //     priceEnd: 30000,
-    //     estimate: DateTime.now().subtract(const Duration(days: 3)),
-    //   ),
-    //   ShippingModel(
-    //     type: 'Kargo',
-    //     priceStart: 20000,
-    //     priceEnd: 30000,
-    //     estimate: DateTime.now().subtract(const Duration(days: 3)),
-    //   ),
-    //   ShippingModel(
-    //     type: 'Ekonomi',
-    //     priceStart: 20000,
-    //     priceEnd: 30000,
-    //     estimate: DateTime.now().subtract(const Duration(days: 4)),
-    //   ),
-    // ];
-
-    void onSelectShippingTap() {
+    Future<void> onSelectShippingTap() async {
       showModalBottomSheet(
         context: context,
         useSafeArea: true,
@@ -279,40 +530,33 @@ class _SelectShippingState extends State<_SelectShipping> {
                   ],
                 ),
                 const SpaceHeight(18.0),
-                // Container(
-                //   decoration: ShapeDecoration(
-                //     shape: RoundedRectangleBorder(
-                //       side: const BorderSide(
-                //         width: 1.50,
-                //         color: AppColors.stroke,
-                //       ),
-                //       borderRadius: BorderRadius.circular(14),
-                //     ),
-                //   ),
-                //   child: ListTile(
-                //     leading: Assets.icons.routing.svg(),
-                //     subtitle: const Text('Dikirim dari Kabupaten Banyuwangi'),
-                //     trailing: const Text(
-                //       'berat: 1kg',
-                //       textAlign: TextAlign.right,
-                //       style: TextStyle(
-                //         color: AppColors.primary,
-                //         fontSize: 16,
-                //         fontWeight: FontWeight.w500,
-                //       ),
-                //     ),
-                //   ),
-                // ),
-                // const SpaceHeight(12.0),
-                // const Text(
-                //   'Estimasi tiba 20 - 23 Januari (Rp. 20.000)',
-                //   style: TextStyle(
-                //     fontSize: 16,
-                //     fontWeight: FontWeight.w600,
-                //   ),
-                // ),
-                // const SpaceHeight(30.0),
+                const SpaceHeight(30.0),
                 const Divider(color: AppColors.stroke),
+                isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: courierCostList.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(color: AppColors.stroke),
+                        itemBuilder: (context, index) {
+                          final item = courierCostList[index];
+                          return ListTile(
+                            onTap: () => {
+                              context.read<CheckoutBloc>().add(
+                                  CheckoutEvent.addShippingService(
+                                      "${item.courierName} - ${item.type}", item.price)),
+                              context.pop()
+                            },
+                            title: Text(
+                              '${item.courierName} - ${item.type} (${item.price.currencyFormatRp})',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text('Estimasi ${item.duration}'),
+                          );
+                        },
+                      ),
                 BlocBuilder<CostBloc, CostState>(
                   builder: (context, state) {
                     return state.maybeWhen(
