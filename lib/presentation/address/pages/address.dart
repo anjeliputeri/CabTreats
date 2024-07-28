@@ -4,8 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/data/models/responses/order_detail_response_model.dart';
 import 'package:flutter_onlineshop_app/presentation/address/bloc/address/address_bloc.dart';
-import 'package:flutter_onlineshop_app/data/models/responses/order_detail_response_model.dart';
-import 'package:flutter_onlineshop_app/presentation/address/bloc/address/address_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/address/pages/add_address.dart';
 import 'package:flutter_onlineshop_app/presentation/address/widgets/tile_address.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/order_detail_page.dart';
