@@ -16,6 +16,7 @@ class CheckoutState with _$CheckoutState {
     int shippingCost,
     String paymentVaName,
     int subTotalPrice,
+    String deliveryMethod,
   ) = _Loaded;
   const factory CheckoutState.error(String message) = _Error;
 }

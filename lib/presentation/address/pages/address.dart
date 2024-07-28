@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/data/models/responses/order_detail_response_model.dart';
 import 'package:flutter_onlineshop_app/presentation/address/bloc/address/address_bloc.dart';
-import 'package:flutter_onlineshop_app/core/constants/colors.dart';
+import 'package:flutter_onlineshop_app/presentation/address/pages/add_address.dart';
+import 'package:flutter_onlineshop_app/presentation/address/widgets/tile_address.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/order_detail_page.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/payment_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:collection/collection.dart'; // Import collection package
 import 'package:intl/intl.dart';
 
 import '../../../core/components/buttons.dart';
 import '../../../core/components/spaces.dart';
-import '../../address/pages/add_address.dart';
-import '../../address/widgets/tile_address.dart';
-import '../../orders/pages/payment_page.dart';
+import '../../../core/core.dart';
+import '../../../core/router/app_router.dart';
+import '../../home/bloc/checkout/checkout_bloc.dart';
+import '../../orders/models/cart_item.dart';
 
 class Address extends StatefulWidget {
   const Address({Key? key}) : super(key: key);
@@ -24,7 +29,6 @@ class Address extends StatefulWidget {
 class _AddressState extends State<Address> {
   String selectedAddressId = "";
   String _deliveryMethod = 'Pick Up';
-
   Stream<Map<String, String>> cartTotalStream() {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -92,7 +96,7 @@ class _AddressState extends State<Address> {
       ),
       body: Column(
         children: [
-          Padding(
+           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
             child: AnimatedSwitcher(
               duration: Duration(milliseconds: 300),
@@ -119,6 +123,11 @@ class _AddressState extends State<Address> {
                         setState(() {
                           _deliveryMethod = 'Pick Up';
                         });
+                        context.read<CheckoutBloc>().add(
+                              CheckoutEvent.addDeliveryMethod(
+                                "Pick Up",
+                              ),
+                            );
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -151,6 +160,11 @@ class _AddressState extends State<Address> {
                         setState(() {
                           _deliveryMethod = 'Delivery';
                         });
+                         context.read<CheckoutBloc>().add(
+                              CheckoutEvent.addDeliveryMethod(
+                                "Delivery",
+                              ),
+                            );
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -184,98 +198,101 @@ class _AddressState extends State<Address> {
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
-
-          var addresses = snapshot.data?.docs.map((doc) {
-                var data = doc.data() as Map<String, dynamic>;
-                data['id'] = doc.id;
-                return data;
-              }).toList() ??
-              [];
-
-          addresses.sort((a, b) {
-            if (a['primaryAddress'] == true && b['primaryAddress'] != true) {
-              return -1;
-            } else if (a['primaryAddress'] != true &&
-                b['primaryAddress'] == true) {
-              return 1;
-            }
-            return 0;
-          });
-
-          if (selectedAddressId == "") {
-            for (var address in addresses) {
-              if (address['primaryAddress'] == true) {
-                selectedAddressId = address['id'];
-                break;
-              }
-            }
-          }
-
-          return BlocBuilder<CheckoutBloc, CheckoutState>(
-              builder: (context, state) {
-            final addressId = state.maybeWhen(
-              orElse: () => 0,
-              loaded: (checkout, addressId, __, ___, ____, _____, ______) {
-                print("addressId: $addressId");
-                return addressId;
-              },
-            );
-
-            return ListView.separated(
-              padding: const EdgeInsets.all(20.0),
-              itemCount: addresses.length + 1,
-              itemBuilder: (context, index) {
-                if (index < addresses.length) {
-                  return TileAddress(
-                    addressData: addresses[index],
-                    isPrimary: addresses[index]['primaryAddress'] == true,
-                    isSelected: addresses[index]['id'] == selectedAddressId,
-                    onEditTap: () {},
-                    onTap: () {
-                      print("tapped : ${addresses[index]['id']}");
-                      print("address_id: $addressId");
-                      setState(() {
-                        selectedAddressId = addresses[index]['id'];
-                      });
-                      context.read<CheckoutBloc>().add(
-                            CheckoutEvent.addAddressId(
-                              addresses[index]['id'],
-                            ),
-                          );
-                      context.read<CheckoutBloc>().add(
-                            CheckoutEvent.addShippingService(
-                              "",
-                              0,
-                            ),
-                          );
+            
+                var addresses = snapshot.data?.docs.map((doc) {
+                      var data = doc.data() as Map<String, dynamic>;
+                      data['id'] = doc.id;
+                      return data;
+                    }).toList() ??
+                    [];
+            
+                addresses.sort((a, b) {
+                  if (a['primaryAddress'] == true && b['primaryAddress'] != true) {
+                    return -1;
+                  } else if (a['primaryAddress'] != true &&
+                      b['primaryAddress'] == true) {
+                    return 1;
+                  }
+                  return 0;
+                });
+            
+                if (selectedAddressId == "") {
+                  for (var address in addresses) {
+                    if (address['primaryAddress'] == true) {
+                      selectedAddressId = address['id'];
+                      break;
+                    }
+                  }
+                }
+            
+                return BlocBuilder<CheckoutBloc, CheckoutState>(
+                    builder: (context, state) {
+                  final addressId = state.maybeWhen(
+                    orElse: () => 0,
+                    loaded: (checkout, addressId, __, ___, ____, _____, ______,________) {
+                      print("addressId: $addressId");
+                      return addressId;
                     },
                   );
-                } else {
-                  return Column(
-                    children: [
-                      if (addresses.isEmpty)
-                        const Text('No address found. Please, add an address'),
-                      SizedBox(height: 24.0),
-                      Button.outlined(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddAddress(),
+            
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(20.0),
+                    itemCount: addresses.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index < addresses.length) {
+                        return TileAddress(
+                          addressData: addresses[index],
+                          isPrimary: addresses[index]['primaryAddress'] == true,
+                          isSelected: addresses[index]['id'] == selectedAddressId,
+                          onEditTap: () {},
+                          onTap: () {
+                            print("tapped : ${addresses[index]['id']}");
+                            print("address_id: $addressId");
+                            setState(() {
+                              selectedAddressId = addresses[index]['id'];
+                            });
+                            context.read<CheckoutBloc>().add(
+                                  CheckoutEvent.addAddressId(
+                                    addresses[index]['id'],
+                                  ),
+                                );
+                            context.read<CheckoutBloc>().add(
+                                  CheckoutEvent.addShippingService(
+                                    "",
+                                    0,
+                                  ),
+                                );
+                          },
+                        );
+                      } else {
+                        return Column(
+                          children: [
+                            if (addresses.isEmpty)
+                              const Text('No address found. Please, add an address'),
+                            SizedBox(height: 24.0),
+                            Button.outlined(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AddAddress(),
+                                  ),
+                                );
+                              },
+                              label: 'Add address',
                             ),
-                          );
-                        },
-                        label: 'Add address',
-                      ),
-                    ],
+                          ],
+                        );
+                      }
+                    },
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12.0),
                   );
-                }
+                });
               },
-              separatorBuilder: (context, index) =>
-                  const SizedBox(height: 12.0),
-            );
-          });
-        },
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -340,7 +357,7 @@ class _AddressState extends State<Address> {
                     builder: (context, state) {
                   final address = state.maybeWhen(
                     orElse: () => "",
-                    loaded: (_, addressId, __, ___, ____, _____, ______) {
+                    loaded: (_, addressId, __, ___, ____, _____, ______,________) {
                       return addressId;
                     },
                   );

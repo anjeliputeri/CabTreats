@@ -25,6 +25,7 @@ class TrackingOrderPage extends StatefulWidget {
 
 class _TrackingOrderPageState extends State<TrackingOrderPage> {
   List<OrderItem> orders = [];
+  Map<String, dynamic> order = {};
   
   final List<TrackRecordModel> trackRecords = [
     TrackRecordModel(
@@ -80,6 +81,9 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
 
     if (orderSnapshot.exists) {
       final data = orderSnapshot.data() as Map<String, dynamic>;
+      setState(() {
+        order = data;
+      });
       final items = data['items'] as List<dynamic>;
 
       return items.map((item) {
@@ -142,7 +146,7 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                     ),
                   ),
                   Text(
-                    "jalan raya ciputat",
+                    order[""],
                     style: TextStyle(
                       fontSize: 16,
                     ),

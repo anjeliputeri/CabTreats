@@ -26,6 +26,7 @@ mixin _$CheckoutEvent {
     required TResult Function(String shippingService, int shippingCost)
         addShippingService,
     required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -38,6 +39,7 @@ mixin _$CheckoutEvent {
     TResult? Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -50,6 +52,7 @@ mixin _$CheckoutEvent {
     TResult Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -62,6 +65,7 @@ mixin _$CheckoutEvent {
     required TResult Function(_AddPaymentMethod value) addPaymentMethod,
     required TResult Function(_AddShippingService value) addShippingService,
     required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -73,6 +77,7 @@ mixin _$CheckoutEvent {
     TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult? Function(_AddShippingService value)? addShippingService,
     TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -84,6 +89,7 @@ mixin _$CheckoutEvent {
     TResult Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult Function(_AddShippingService value)? addShippingService,
     TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -153,6 +159,7 @@ class _$StartedImpl implements _Started {
     required TResult Function(String shippingService, int shippingCost)
         addShippingService,
     required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
   }) {
     return started();
   }
@@ -168,6 +175,7 @@ class _$StartedImpl implements _Started {
     TResult? Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
   }) {
     return started?.call();
   }
@@ -183,6 +191,7 @@ class _$StartedImpl implements _Started {
     TResult Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (started != null) {
@@ -201,6 +210,7 @@ class _$StartedImpl implements _Started {
     required TResult Function(_AddPaymentMethod value) addPaymentMethod,
     required TResult Function(_AddShippingService value) addShippingService,
     required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
   }) {
     return started(this);
   }
@@ -215,6 +225,7 @@ class _$StartedImpl implements _Started {
     TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult? Function(_AddShippingService value)? addShippingService,
     TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
   }) {
     return started?.call(this);
   }
@@ -229,6 +240,7 @@ class _$StartedImpl implements _Started {
     TResult Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult Function(_AddShippingService value)? addShippingService,
     TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (started != null) {
@@ -314,6 +326,7 @@ class _$AddItemImpl implements _AddItem {
     required TResult Function(String shippingService, int shippingCost)
         addShippingService,
     required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
   }) {
     return addItem(product);
   }
@@ -329,6 +342,7 @@ class _$AddItemImpl implements _AddItem {
     TResult? Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
   }) {
     return addItem?.call(product);
   }
@@ -344,6 +358,7 @@ class _$AddItemImpl implements _AddItem {
     TResult Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addItem != null) {
@@ -362,6 +377,7 @@ class _$AddItemImpl implements _AddItem {
     required TResult Function(_AddPaymentMethod value) addPaymentMethod,
     required TResult Function(_AddShippingService value) addShippingService,
     required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
   }) {
     return addItem(this);
   }
@@ -376,6 +392,7 @@ class _$AddItemImpl implements _AddItem {
     TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult? Function(_AddShippingService value)? addShippingService,
     TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
   }) {
     return addItem?.call(this);
   }
@@ -390,6 +407,7 @@ class _$AddItemImpl implements _AddItem {
     TResult Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult Function(_AddShippingService value)? addShippingService,
     TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addItem != null) {
@@ -480,6 +498,7 @@ class _$RemoveItemImpl implements _RemoveItem {
     required TResult Function(String shippingService, int shippingCost)
         addShippingService,
     required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
   }) {
     return removeItem(product);
   }
@@ -495,6 +514,7 @@ class _$RemoveItemImpl implements _RemoveItem {
     TResult? Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
   }) {
     return removeItem?.call(product);
   }
@@ -510,6 +530,7 @@ class _$RemoveItemImpl implements _RemoveItem {
     TResult Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (removeItem != null) {
@@ -528,6 +549,7 @@ class _$RemoveItemImpl implements _RemoveItem {
     required TResult Function(_AddPaymentMethod value) addPaymentMethod,
     required TResult Function(_AddShippingService value) addShippingService,
     required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
   }) {
     return removeItem(this);
   }
@@ -542,6 +564,7 @@ class _$RemoveItemImpl implements _RemoveItem {
     TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult? Function(_AddShippingService value)? addShippingService,
     TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
   }) {
     return removeItem?.call(this);
   }
@@ -556,6 +579,7 @@ class _$RemoveItemImpl implements _RemoveItem {
     TResult Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult Function(_AddShippingService value)? addShippingService,
     TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (removeItem != null) {
@@ -647,6 +671,7 @@ class _$AddAddressIdImpl implements _AddAddressId {
     required TResult Function(String shippingService, int shippingCost)
         addShippingService,
     required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
   }) {
     return addAddressId(addressId);
   }
@@ -662,6 +687,7 @@ class _$AddAddressIdImpl implements _AddAddressId {
     TResult? Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
   }) {
     return addAddressId?.call(addressId);
   }
@@ -677,6 +703,7 @@ class _$AddAddressIdImpl implements _AddAddressId {
     TResult Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addAddressId != null) {
@@ -695,6 +722,7 @@ class _$AddAddressIdImpl implements _AddAddressId {
     required TResult Function(_AddPaymentMethod value) addPaymentMethod,
     required TResult Function(_AddShippingService value) addShippingService,
     required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
   }) {
     return addAddressId(this);
   }
@@ -709,6 +737,7 @@ class _$AddAddressIdImpl implements _AddAddressId {
     TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult? Function(_AddShippingService value)? addShippingService,
     TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
   }) {
     return addAddressId?.call(this);
   }
@@ -723,6 +752,7 @@ class _$AddAddressIdImpl implements _AddAddressId {
     TResult Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult Function(_AddShippingService value)? addShippingService,
     TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addAddressId != null) {
@@ -815,6 +845,7 @@ class _$AddPaymentMethodImpl implements _AddPaymentMethod {
     required TResult Function(String shippingService, int shippingCost)
         addShippingService,
     required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
   }) {
     return addPaymentMethod(paymentMethod);
   }
@@ -830,6 +861,7 @@ class _$AddPaymentMethodImpl implements _AddPaymentMethod {
     TResult? Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
   }) {
     return addPaymentMethod?.call(paymentMethod);
   }
@@ -845,6 +877,7 @@ class _$AddPaymentMethodImpl implements _AddPaymentMethod {
     TResult Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addPaymentMethod != null) {
@@ -863,6 +896,7 @@ class _$AddPaymentMethodImpl implements _AddPaymentMethod {
     required TResult Function(_AddPaymentMethod value) addPaymentMethod,
     required TResult Function(_AddShippingService value) addShippingService,
     required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
   }) {
     return addPaymentMethod(this);
   }
@@ -877,6 +911,7 @@ class _$AddPaymentMethodImpl implements _AddPaymentMethod {
     TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult? Function(_AddShippingService value)? addShippingService,
     TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
   }) {
     return addPaymentMethod?.call(this);
   }
@@ -891,6 +926,7 @@ class _$AddPaymentMethodImpl implements _AddPaymentMethod {
     TResult Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult Function(_AddShippingService value)? addShippingService,
     TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addPaymentMethod != null) {
@@ -993,6 +1029,7 @@ class _$AddShippingServiceImpl implements _AddShippingService {
     required TResult Function(String shippingService, int shippingCost)
         addShippingService,
     required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
   }) {
     return addShippingService(shippingService, shippingCost);
   }
@@ -1008,6 +1045,7 @@ class _$AddShippingServiceImpl implements _AddShippingService {
     TResult? Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
   }) {
     return addShippingService?.call(shippingService, shippingCost);
   }
@@ -1023,6 +1061,7 @@ class _$AddShippingServiceImpl implements _AddShippingService {
     TResult Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addShippingService != null) {
@@ -1041,6 +1080,7 @@ class _$AddShippingServiceImpl implements _AddShippingService {
     required TResult Function(_AddPaymentMethod value) addPaymentMethod,
     required TResult Function(_AddShippingService value) addShippingService,
     required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
   }) {
     return addShippingService(this);
   }
@@ -1055,6 +1095,7 @@ class _$AddShippingServiceImpl implements _AddShippingService {
     TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult? Function(_AddShippingService value)? addShippingService,
     TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
   }) {
     return addShippingService?.call(this);
   }
@@ -1069,6 +1110,7 @@ class _$AddShippingServiceImpl implements _AddShippingService {
     TResult Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult Function(_AddShippingService value)? addShippingService,
     TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addShippingService != null) {
@@ -1164,6 +1206,7 @@ class _$AddSubTotalPriceImpl implements _AddSubTotalPrice {
     required TResult Function(String shippingService, int shippingCost)
         addShippingService,
     required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
   }) {
     return addSubTotalPrice(subtotal);
   }
@@ -1179,6 +1222,7 @@ class _$AddSubTotalPriceImpl implements _AddSubTotalPrice {
     TResult? Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
   }) {
     return addSubTotalPrice?.call(subtotal);
   }
@@ -1194,6 +1238,7 @@ class _$AddSubTotalPriceImpl implements _AddSubTotalPrice {
     TResult Function(String shippingService, int shippingCost)?
         addShippingService,
     TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addSubTotalPrice != null) {
@@ -1212,6 +1257,7 @@ class _$AddSubTotalPriceImpl implements _AddSubTotalPrice {
     required TResult Function(_AddPaymentMethod value) addPaymentMethod,
     required TResult Function(_AddShippingService value) addShippingService,
     required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
   }) {
     return addSubTotalPrice(this);
   }
@@ -1226,6 +1272,7 @@ class _$AddSubTotalPriceImpl implements _AddSubTotalPrice {
     TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult? Function(_AddShippingService value)? addShippingService,
     TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
   }) {
     return addSubTotalPrice?.call(this);
   }
@@ -1240,6 +1287,7 @@ class _$AddSubTotalPriceImpl implements _AddSubTotalPrice {
     TResult Function(_AddPaymentMethod value)? addPaymentMethod,
     TResult Function(_AddShippingService value)? addShippingService,
     TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
     required TResult orElse(),
   }) {
     if (addSubTotalPrice != null) {
@@ -1259,6 +1307,181 @@ abstract class _AddSubTotalPrice implements CheckoutEvent {
 }
 
 /// @nodoc
+abstract class _$$AddDeliveryMethodImplCopyWith<$Res> {
+  factory _$$AddDeliveryMethodImplCopyWith(_$AddDeliveryMethodImpl value,
+          $Res Function(_$AddDeliveryMethodImpl) then) =
+      __$$AddDeliveryMethodImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String deliveryMethod});
+}
+
+/// @nodoc
+class __$$AddDeliveryMethodImplCopyWithImpl<$Res>
+    extends _$CheckoutEventCopyWithImpl<$Res, _$AddDeliveryMethodImpl>
+    implements _$$AddDeliveryMethodImplCopyWith<$Res> {
+  __$$AddDeliveryMethodImplCopyWithImpl(_$AddDeliveryMethodImpl _value,
+      $Res Function(_$AddDeliveryMethodImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? deliveryMethod = null,
+  }) {
+    return _then(_$AddDeliveryMethodImpl(
+      null == deliveryMethod
+          ? _value.deliveryMethod
+          : deliveryMethod // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$AddDeliveryMethodImpl implements _AddDeliveryMethod {
+  const _$AddDeliveryMethodImpl(this.deliveryMethod);
+
+  @override
+  final String deliveryMethod;
+
+  @override
+  String toString() {
+    return 'CheckoutEvent.addDeliveryMethod(deliveryMethod: $deliveryMethod)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AddDeliveryMethodImpl &&
+            (identical(other.deliveryMethod, deliveryMethod) ||
+                other.deliveryMethod == deliveryMethod));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, deliveryMethod);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AddDeliveryMethodImplCopyWith<_$AddDeliveryMethodImpl> get copyWith =>
+      __$$AddDeliveryMethodImplCopyWithImpl<_$AddDeliveryMethodImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() started,
+    required TResult Function(Product product) addItem,
+    required TResult Function(Product product) removeItem,
+    required TResult Function(String addressId) addAddressId,
+    required TResult Function(String paymentMethod) addPaymentMethod,
+    required TResult Function(String shippingService, int shippingCost)
+        addShippingService,
+    required TResult Function(int subtotal) addSubTotalPrice,
+    required TResult Function(String deliveryMethod) addDeliveryMethod,
+  }) {
+    return addDeliveryMethod(deliveryMethod);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? started,
+    TResult? Function(Product product)? addItem,
+    TResult? Function(Product product)? removeItem,
+    TResult? Function(String addressId)? addAddressId,
+    TResult? Function(String paymentMethod)? addPaymentMethod,
+    TResult? Function(String shippingService, int shippingCost)?
+        addShippingService,
+    TResult? Function(int subtotal)? addSubTotalPrice,
+    TResult? Function(String deliveryMethod)? addDeliveryMethod,
+  }) {
+    return addDeliveryMethod?.call(deliveryMethod);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? started,
+    TResult Function(Product product)? addItem,
+    TResult Function(Product product)? removeItem,
+    TResult Function(String addressId)? addAddressId,
+    TResult Function(String paymentMethod)? addPaymentMethod,
+    TResult Function(String shippingService, int shippingCost)?
+        addShippingService,
+    TResult Function(int subtotal)? addSubTotalPrice,
+    TResult Function(String deliveryMethod)? addDeliveryMethod,
+    required TResult orElse(),
+  }) {
+    if (addDeliveryMethod != null) {
+      return addDeliveryMethod(deliveryMethod);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Started value) started,
+    required TResult Function(_AddItem value) addItem,
+    required TResult Function(_RemoveItem value) removeItem,
+    required TResult Function(_AddAddressId value) addAddressId,
+    required TResult Function(_AddPaymentMethod value) addPaymentMethod,
+    required TResult Function(_AddShippingService value) addShippingService,
+    required TResult Function(_AddSubTotalPrice value) addSubTotalPrice,
+    required TResult Function(_AddDeliveryMethod value) addDeliveryMethod,
+  }) {
+    return addDeliveryMethod(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Started value)? started,
+    TResult? Function(_AddItem value)? addItem,
+    TResult? Function(_RemoveItem value)? removeItem,
+    TResult? Function(_AddAddressId value)? addAddressId,
+    TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
+    TResult? Function(_AddShippingService value)? addShippingService,
+    TResult? Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult? Function(_AddDeliveryMethod value)? addDeliveryMethod,
+  }) {
+    return addDeliveryMethod?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Started value)? started,
+    TResult Function(_AddItem value)? addItem,
+    TResult Function(_RemoveItem value)? removeItem,
+    TResult Function(_AddAddressId value)? addAddressId,
+    TResult Function(_AddPaymentMethod value)? addPaymentMethod,
+    TResult Function(_AddShippingService value)? addShippingService,
+    TResult Function(_AddSubTotalPrice value)? addSubTotalPrice,
+    TResult Function(_AddDeliveryMethod value)? addDeliveryMethod,
+    required TResult orElse(),
+  }) {
+    if (addDeliveryMethod != null) {
+      return addDeliveryMethod(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _AddDeliveryMethod implements CheckoutEvent {
+  const factory _AddDeliveryMethod(final String deliveryMethod) =
+      _$AddDeliveryMethodImpl;
+
+  String get deliveryMethod;
+  @JsonKey(ignore: true)
+  _$$AddDeliveryMethodImplCopyWith<_$AddDeliveryMethodImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$CheckoutState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
@@ -1271,7 +1494,8 @@ mixin _$CheckoutState {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)
+            int subTotalPrice,
+            String deliveryMethod)
         loaded,
     required TResult Function(String message) error,
   }) =>
@@ -1287,7 +1511,8 @@ mixin _$CheckoutState {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult? Function(String message)? error,
   }) =>
@@ -1303,7 +1528,8 @@ mixin _$CheckoutState {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -1401,7 +1627,8 @@ class _$InitialImpl implements _Initial {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)
+            int subTotalPrice,
+            String deliveryMethod)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -1420,7 +1647,8 @@ class _$InitialImpl implements _Initial {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -1439,7 +1667,8 @@ class _$InitialImpl implements _Initial {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -1539,7 +1768,8 @@ class _$LoadingImpl implements _Loading {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)
+            int subTotalPrice,
+            String deliveryMethod)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -1558,7 +1788,8 @@ class _$LoadingImpl implements _Loading {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -1577,7 +1808,8 @@ class _$LoadingImpl implements _Loading {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -1643,7 +1875,8 @@ abstract class _$$LoadedImplCopyWith<$Res> {
       String shippingService,
       int shippingCost,
       String paymentVaName,
-      int subTotalPrice});
+      int subTotalPrice,
+      String deliveryMethod});
 }
 
 /// @nodoc
@@ -1664,6 +1897,7 @@ class __$$LoadedImplCopyWithImpl<$Res>
     Object? shippingCost = null,
     Object? paymentVaName = null,
     Object? subTotalPrice = null,
+    Object? deliveryMethod = null,
   }) {
     return _then(_$LoadedImpl(
       null == products
@@ -1694,6 +1928,10 @@ class __$$LoadedImplCopyWithImpl<$Res>
           ? _value.subTotalPrice
           : subTotalPrice // ignore: cast_nullable_to_non_nullable
               as int,
+      null == deliveryMethod
+          ? _value.deliveryMethod
+          : deliveryMethod // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -1708,7 +1946,8 @@ class _$LoadedImpl implements _Loaded {
       this.shippingService,
       this.shippingCost,
       this.paymentVaName,
-      this.subTotalPrice)
+      this.subTotalPrice,
+      this.deliveryMethod)
       : _products = products;
 
   final List<ProductQuantity> _products;
@@ -1731,10 +1970,12 @@ class _$LoadedImpl implements _Loaded {
   final String paymentVaName;
   @override
   final int subTotalPrice;
+  @override
+  final String deliveryMethod;
 
   @override
   String toString() {
-    return 'CheckoutState.loaded(products: $products, addressId: $addressId, paymentMethod: $paymentMethod, shippingService: $shippingService, shippingCost: $shippingCost, paymentVaName: $paymentVaName, subTotalPrice: $subTotalPrice)';
+    return 'CheckoutState.loaded(products: $products, addressId: $addressId, paymentMethod: $paymentMethod, shippingService: $shippingService, shippingCost: $shippingCost, paymentVaName: $paymentVaName, subTotalPrice: $subTotalPrice, deliveryMethod: $deliveryMethod)';
   }
 
   @override
@@ -1754,7 +1995,9 @@ class _$LoadedImpl implements _Loaded {
             (identical(other.paymentVaName, paymentVaName) ||
                 other.paymentVaName == paymentVaName) &&
             (identical(other.subTotalPrice, subTotalPrice) ||
-                other.subTotalPrice == subTotalPrice));
+                other.subTotalPrice == subTotalPrice) &&
+            (identical(other.deliveryMethod, deliveryMethod) ||
+                other.deliveryMethod == deliveryMethod));
   }
 
   @override
@@ -1766,7 +2009,8 @@ class _$LoadedImpl implements _Loaded {
       shippingService,
       shippingCost,
       paymentVaName,
-      subTotalPrice);
+      subTotalPrice,
+      deliveryMethod);
 
   @JsonKey(ignore: true)
   @override
@@ -1786,12 +2030,13 @@ class _$LoadedImpl implements _Loaded {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)
+            int subTotalPrice,
+            String deliveryMethod)
         loaded,
     required TResult Function(String message) error,
   }) {
     return loaded(products, addressId, paymentMethod, shippingService,
-        shippingCost, paymentVaName, subTotalPrice);
+        shippingCost, paymentVaName, subTotalPrice, deliveryMethod);
   }
 
   @override
@@ -1806,12 +2051,13 @@ class _$LoadedImpl implements _Loaded {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult? Function(String message)? error,
   }) {
     return loaded?.call(products, addressId, paymentMethod, shippingService,
-        shippingCost, paymentVaName, subTotalPrice);
+        shippingCost, paymentVaName, subTotalPrice, deliveryMethod);
   }
 
   @override
@@ -1826,14 +2072,15 @@ class _$LoadedImpl implements _Loaded {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
     if (loaded != null) {
       return loaded(products, addressId, paymentMethod, shippingService,
-          shippingCost, paymentVaName, subTotalPrice);
+          shippingCost, paymentVaName, subTotalPrice, deliveryMethod);
     }
     return orElse();
   }
@@ -1884,7 +2131,8 @@ abstract class _Loaded implements CheckoutState {
       final String shippingService,
       final int shippingCost,
       final String paymentVaName,
-      final int subTotalPrice) = _$LoadedImpl;
+      final int subTotalPrice,
+      final String deliveryMethod) = _$LoadedImpl;
 
   List<ProductQuantity> get products;
   String get addressId;
@@ -1893,6 +2141,7 @@ abstract class _Loaded implements CheckoutState {
   int get shippingCost;
   String get paymentVaName;
   int get subTotalPrice;
+  String get deliveryMethod;
   @JsonKey(ignore: true)
   _$$LoadedImplCopyWith<_$LoadedImpl> get copyWith =>
       throw _privateConstructorUsedError;
@@ -1971,7 +2220,8 @@ class _$ErrorImpl implements _Error {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)
+            int subTotalPrice,
+            String deliveryMethod)
         loaded,
     required TResult Function(String message) error,
   }) {
@@ -1990,7 +2240,8 @@ class _$ErrorImpl implements _Error {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult? Function(String message)? error,
   }) {
@@ -2009,7 +2260,8 @@ class _$ErrorImpl implements _Error {
             String shippingService,
             int shippingCost,
             String paymentVaName,
-            int subTotalPrice)?
+            int subTotalPrice,
+            String deliveryMethod)?
         loaded,
     TResult Function(String message)? error,
     required TResult orElse(),

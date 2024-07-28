@@ -9,7 +9,7 @@ part 'checkout_state.dart';
 part 'checkout_bloc.freezed.dart';
 
 class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
-  CheckoutBloc() : super(const _Loaded([], '', '', '', 0, '', 0)) {
+  CheckoutBloc() : super(const _Loaded([], '', '', '', 0, '', 0, '')) {
     on<_AddItem>((event, emit) {
       final currentState = state as _Loaded;
       if (currentState.products
@@ -27,7 +27,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
             currentState.shippingService,
             currentState.shippingCost,
             currentState.shippingService,
-            currentState.subTotalPrice));
+            currentState.subTotalPrice,
+            currentState.deliveryMethod));
       } else {
         final newItem = ProductQuantity(product: event.product, quantity: 1);
         final newItems = [...currentState.products, newItem];
@@ -38,7 +39,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
             currentState.shippingService,
             currentState.shippingCost,
             currentState.shippingService,
-            currentState.subTotalPrice));
+            currentState.subTotalPrice,
+            currentState.deliveryMethod));
       }
     });
 
@@ -61,7 +63,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
               currentState.shippingService,
               currentState.shippingCost,
               currentState.shippingService,
-              currentState.subTotalPrice));
+              currentState.subTotalPrice,
+              currentState.deliveryMethod));
         } else {
           final newItem = item.copyWith(quantity: item.quantity - 1);
           final newItems = currentState.products
@@ -74,7 +77,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
               currentState.shippingService,
               currentState.shippingCost,
               currentState.shippingService,
-              currentState.subTotalPrice));
+              currentState.subTotalPrice,
+              currentState.deliveryMethod));
         }
       }
     });
@@ -88,7 +92,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           currentState.shippingService,
           currentState.shippingCost,
           currentState.shippingService,
-          currentState.subTotalPrice));
+          currentState.subTotalPrice,
+          currentState.deliveryMethod));
     });
 
     on<_AddPaymentMethod>((event, emit) {
@@ -100,7 +105,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           currentState.shippingService,
           currentState.shippingCost,
           event.paymentMethod,
-          currentState.subTotalPrice));
+          currentState.subTotalPrice,
+          currentState.deliveryMethod));
     });
 
     on<_AddShippingService>((event, emit) {
@@ -112,7 +118,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           event.shippingService,
           event.shippingCost,
           currentState.paymentMethod,
-          currentState.subTotalPrice));
+          currentState.subTotalPrice,
+          currentState.deliveryMethod));
     });
 
      on<_AddSubTotalPrice>((event, emit) {
@@ -124,14 +131,28 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           currentState.shippingService,
           currentState.shippingCost,
           currentState.paymentMethod,
-          event.subtotal));
+          event.subtotal,
+          currentState.deliveryMethod));
+    });
+
+    on<_AddDeliveryMethod>((event, emit) {
+      final currentState = state as _Loaded;
+      emit(_Loaded(
+          currentState.products,
+          currentState.addressId,
+          currentState.paymentMethod,
+          currentState.shippingService,
+          currentState.shippingCost,
+          currentState.paymentMethod,
+          currentState.subTotalPrice,
+          event.deliveryMethod));
     });
 
 
 
     //on started
     on<_Started>((event, emit) {
-      emit(const _Loaded([], '', '', '', 0, '', 0));
+      emit(const _Loaded([], '', '', '', 0, '', 0, ''));
     });
   }
 }

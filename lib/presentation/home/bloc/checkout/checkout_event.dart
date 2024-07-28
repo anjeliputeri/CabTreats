@@ -15,6 +15,7 @@ class CheckoutEvent with _$CheckoutEvent {
       String shippingService, int shippingCost) = _AddShippingService;
 
   const factory CheckoutEvent.addSubTotalPrice(int subtotal) = _AddSubTotalPrice;
+  const factory CheckoutEvent.addDeliveryMethod(String deliveryMethod) = _AddDeliveryMethod;
 
       
 }

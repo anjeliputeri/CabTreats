@@ -165,7 +165,7 @@ class _PaymentPageState extends State<PaymentPage> {
   Future<void> _initialize() async {
     final addressId = context.read<CheckoutBloc>().state.maybeWhen(
         orElse: () => "",
-        loaded: (_, addressId, __, ___, ____, _____, ______) {
+        loaded: (_, addressId, __, ___, ____, _____, ______, ________) {
           return addressId;
         });
 
@@ -330,7 +330,7 @@ class _PaymentPageState extends State<PaymentPage> {
             shippingCost = 0;
             subTotalPrice = 0;
           },
-          loaded: (_, address, ___, shippService, shippCost, ____, subTotal) =>
+          loaded: (_, address, ___, shippService, shippCost, ____, subTotal, ________) =>
               {
             print("shippingService: $shippingService"),
             setState(() {

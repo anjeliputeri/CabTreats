@@ -174,7 +174,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 builder: (context, state) {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (_, __, ___, ____, shippingCost, ______, _______) {
+                    loaded: (_, __, ___, ____, shippingCost, ______, _______,________) {
                       return shippingCost;
                     },
                   );
@@ -202,13 +202,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 builder: (context, state) {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (_, __, ___, ____, shippingCost, ______, _______) {
+                    loaded: (_, __, ___, ____, shippingCost, ______, _______, ________) {
                       return shippingCost;
                     },
                   );
                   final shippingProvider = state.maybeWhen(
                     orElse: () => '',
-                    loaded: (_, __, ___, shipperName, _____, ______, _______) {
+                    loaded: (_, __, ___, shipperName, _____, ______, _______,________) {
                       return shipperName;
                     },
                   );
@@ -238,7 +238,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   final total = state.maybeWhen(
                     orElse: () => 0,
                     loaded: (products, addressId, __, ___, shippingCost, ______,
-                        total) {
+                        total, ________) {
                       return shippingCost + total;
                     },
                   );
@@ -261,7 +261,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             builder: (context, state) {
               final shippingCost = state.maybeWhen(
               orElse: () => 0,
-              loaded: (_, ___, __, shippingService, shippingCost, _____, ______) {
+              loaded: (_, ___, __, shippingService, shippingCost, _____, ______,________) {
                 return shippingCost;
               },
             );
@@ -308,7 +308,7 @@ class _SelectShippingState extends State<_SelectShipping> {
     await _loadCart();
      final addressId = context.read<CheckoutBloc>().state.maybeWhen(
         orElse: () => "",
-        loaded: (_, addressId, __, ___, ____, _____, ______) {
+        loaded: (_, addressId, __, ___, ____, _____, ______, ________) {
           return addressId;
         });
 

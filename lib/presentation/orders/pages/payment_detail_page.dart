@@ -244,7 +244,7 @@ class PaymentDetailPage extends StatelessWidget {
             builder: (context, state) {
               final paymentVaName = state.maybeWhen(
                 orElse: () => '',
-                loaded: (_, __, ___, ____, _____, paymentVaName, ______) =>
+                loaded: (_, __, ___, ____, _____, paymentVaName, ______,________) =>
                     paymentVaName,
               );
               return ListView.separated(
@@ -291,7 +291,7 @@ class PaymentDetailPage extends StatelessWidget {
                 builder: (context, state) {
                   final subtotal = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (products, _, __, ___, ____, ______, _____) =>
+                    loaded: (products, _, __, ___, ____, ______, _____, ________) =>
                         products.fold<int>(
                       0,
                       (previousValue, element) =>
@@ -323,7 +323,7 @@ class PaymentDetailPage extends StatelessWidget {
                 builder: (context, state) {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (_, __, ___, ____, shippingCost, ______, _______) =>
+                    loaded: (_, __, ___, ____, shippingCost, ______, _______,________) =>
                         shippingCost,
                   );
                   return Text(
@@ -352,7 +352,7 @@ class PaymentDetailPage extends StatelessWidget {
                 builder: (context, state) {
                   final total = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (products, _, __, ___, shippingCost, ______, _______) =>
+                    loaded: (products, _, __, ___, shippingCost, ______, _______,________) =>
                         products.fold<int>(
                           0,
                           (previousValue, element) =>
@@ -376,35 +376,35 @@ class PaymentDetailPage extends StatelessWidget {
             builder: (context, state) {
               final paymentMethod = state.maybeWhen(
                 orElse: () => '',
-                loaded: (_, __, paymentMethod, ___, ____, ______, _______) =>
+                loaded: (_, __, paymentMethod, ___, ____, ______, _______,________) =>
                     paymentMethod
               );
               final shippingService = state.maybeWhen(
                 orElse: () => '',
-                loaded: (_, __, ___, shippingService, ____, ______, _______) =>
+                loaded: (_, __, ___, shippingService, ____, ______, _______,________) =>
                     shippingService,
               );
 
               final shippingCost = state.maybeWhen(
                 orElse: () => 0,
-                loaded: (_, __, ___, ____, shippingCost, ______, _______) =>
+                loaded: (_, __, ___, ____, shippingCost, ______, _______, ________) =>
                     shippingCost,
               );
 
               final paymentVaName = state.maybeWhen(
                 orElse: () => '',
-                loaded: (_, __, ___, ____, _____, paymentVaName, ______) =>
+                loaded: (_, __, ___, ____, _____, paymentVaName, ______,________) =>
                     paymentVaName,
               );
 
               final products = state.maybeWhen(
                 orElse: () => [],
-                loaded: (products, _, __, ___, ____, ______, _______) => products,
+                loaded: (products, _, __, ___, ____, ______, _______,________) => products,
               );
 
               final addressId = state.maybeWhen(
                 orElse: () => 0,
-                loaded: (_, addressId, __, ___, ____, ______, _______) => addressId,
+                loaded: (_, addressId, __, ___, ____, ______, _______,________) => addressId,
               );
 
               return BlocListener<OrderBloc, OrderState>(
