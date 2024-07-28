@@ -97,9 +97,17 @@ class _BeverageExploreState extends State<BeverageExplore> {
           );
         }
 
+        var filteredData = data.where((doc) {
+          var product = doc.data();
+          var nama = product['name'].toString().toLowerCase();
+          var harga = product['price'].toString().toLowerCase();
+          var query = widget.searchQuery.toLowerCase();
+          return nama.contains(query) || harga.contains(query);
+        }).toList();
+
         return SingleChildScrollView(
           child: Column(
-            children: data.map((doc) {
+            children: filteredData.map((doc) {
               var product = doc.data();
               var nama = product['name'];
               var harga = product['price'];

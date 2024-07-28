@@ -17,6 +17,10 @@ import '../../home/bloc/checkout/checkout_bloc.dart';
 import '../../orders/pages/keranjang_page.dart';
 
 class IceExplore extends StatefulWidget {
+  final String searchQuery;
+
+  IceExplore({required this.searchQuery});
+
   @override
   State<IceExplore> createState() => _IceExploreState();
 }
@@ -93,9 +97,17 @@ class _IceExploreState extends State<IceExplore> {
           );
         }
 
+        var filteredData = data.where((doc) {
+          var product = doc.data();
+          var nama = product['name'].toString().toLowerCase();
+          var harga = product['price'].toString().toLowerCase();
+          var query = widget.searchQuery.toLowerCase();
+          return nama.contains(query) || harga.contains(query);
+        }).toList();
+
         return SingleChildScrollView(
           child: Column(
-            children: data.map((doc) {
+            children: filteredData.map((doc) {
               var product = doc.data();
               var nama = product['name'];
               var harga = product['price'];
