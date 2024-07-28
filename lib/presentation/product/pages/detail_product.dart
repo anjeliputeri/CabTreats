@@ -6,7 +6,7 @@ import 'package:flutter_onlineshop_app/core/components/buttons.dart';
 import 'package:flutter_onlineshop_app/core/constants/colors.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
 import 'package:badges/badges.dart' as badges;
-
+import 'package:get/get.dart';
 import '../../orders/pages/keranjang_page.dart';
 
 class DetailProduct extends StatefulWidget {
@@ -19,7 +19,6 @@ class DetailProduct extends StatefulWidget {
 }
 
 class _DetailProductState extends State<DetailProduct> {
-  bool _loading = true;
   final db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
 
@@ -98,6 +97,27 @@ class _DetailProductState extends State<DetailProduct> {
     }
   }
 
+  Stream<Map<String, dynamic>> accountProfileImage() {
+    return FirebaseFirestore.instance
+        .collection('accounts')
+        .doc(user!.email)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists) {
+        return {'profile_image': '', 'name': '', 'address': '', 'province': '', 'city': ''};
+      }
+      var accountData = snapshot.data() as Map<String, dynamic>;
+      return {
+        'profile_image': accountData['profile_image'] ?? '',
+        'name': accountData['name'] ?? '',
+        'address': accountData['address'] ?? '',
+        'province': accountData['province'] ?? '',
+        'city': accountData['city'] ?? '',
+      };
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,8 +172,8 @@ class _DetailProductState extends State<DetailProduct> {
                     borderRadius: BorderRadius.circular(5.0),
                     child: Image.network(
                       widget.product['image'],
-                      width: 350,
-                      height: 250,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      height: MediaQuery.of(context).size.width * 0.5,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -171,7 +191,7 @@ class _DetailProductState extends State<DetailProduct> {
                           Text(
                             widget.product['name'],
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                             maxLines: null, // Allows the text to wrap to multiple lines
@@ -193,7 +213,7 @@ class _DetailProductState extends State<DetailProduct> {
                         'Tersedia : 50',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontSize: 10,
                         ),
                       ),
                     ),
@@ -206,65 +226,100 @@ class _DetailProductState extends State<DetailProduct> {
                   formatPrice(widget.product['price']),
                   style: TextStyle(
                     color: AppColors.primary,
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: Colors.grey[300]!),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                      child: Text(
-                        'CWB Online Store',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: Colors.grey[300]!),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                      child: Row(
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      Row(
                         children: [
-                          Icon(Icons.verified_user, color: Colors.green),
-                          SizedBox(width: 4),
-                          Text(
-                            'Official Store',
-                            style: TextStyle(fontSize: 14),
+                          StreamBuilder<Map<String, dynamic>>(
+                            stream: accountProfileImage(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData && snapshot.data!['profile_image'].isNotEmpty) {
+                                return CircleAvatar(
+                                  radius: 30.0,
+                                  backgroundImage: NetworkImage(snapshot.data!['profile_image']),
+                                  backgroundColor: Colors.transparent,
+                                );
+                              } else {
+                                return CircleAvatar(
+                                  radius: 30.0,
+                                  backgroundColor: Colors.grey[300],
+                                  child: Icon(Icons.person, color: Colors.white),
+                                );
+                              }
+                            },
+                          ),
+                          SizedBox(width: 20),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              StreamBuilder<Map<String, dynamic>>(
+                                stream: accountProfileImage(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData && snapshot.data!['name'].isNotEmpty || snapshot.hasData && snapshot.data!['address'].isNotEmpty) {
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          snapshot.data!['name'] ?? 'Data not found',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${snapshot.data!['province'] ?? 'Data not found'}, ${snapshot.data!['city'] ?? 'Data not found'}\n${snapshot.data!['address'] ?? 'Data not found'}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                          ),
+                                        )
+                                      ],
+                                    );
+                                  } else {
+                                    return Container();
+                                  }
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              SizedBox(height: 42),
+              SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
                   'Description Product',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 12),
                 ),
               ),
               SizedBox(height: 24),

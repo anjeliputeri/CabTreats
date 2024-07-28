@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/core/constants/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
 
 import '../../../core/components/buttons.dart';
 import '../../../core/components/custom_text_field.dart';
@@ -29,14 +30,75 @@ class _AddAccountState extends State<AddAccount> {
   final posCode = TextEditingController();
   bool isPrimaryAddress = false;
 
+  double? selectedLatitude;
+  double? selectedLongitude;
+
   File? _profileImage;
   final ImagePicker _picker = ImagePicker();
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? _profileImageUrl;
 
   var strKey = 'c364bc54969f4a3b67bc4fec31e84bab';
   var strProvince;
   var strCity;
+
+  bool isSeller = false;
+
+  void fetchUserProfile() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance.collection('accounts').doc(user.email).get();
+      final data = userDoc.data();
+      if (data != null) {
+        setState(() {
+          nameController.text = data['name'] ?? '';
+          addressController.text = data['address'] ?? '';
+          phoneNumberController.text = data['phone_number'] ?? '';
+          posCode.text = data['postal_code'] ?? '';
+          selectedLatitude = data['latitude'];
+          selectedLongitude = data['longitude'];
+          strProvince = data['province'];
+          strCity = data['city'];
+          isPrimaryAddress = data['is_primary_address'] ?? false;
+
+          // Directly use the URL from Firestore
+          if (data['profile_image'] != null) {
+            final profileImageUrl = data['profile_image'] as String;
+            _profileImageUrl = profileImageUrl; // Store URL as a string
+          }
+        });
+      }
+    }
+  }
+
+  void fetchUserRole() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userRole = userDoc.data()?['role'] as String?;
+      setState(() {
+        isSeller = userRole == 'Seller';
+      });
+    }
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> fetchUserProfileStream() {
+    final user = _auth.currentUser;
+    if (user != null) {
+      return FirebaseFirestore.instance.collection('accounts').doc(user.email).snapshots();
+    }
+    return Stream.empty(); // Return empty stream if user is null
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    }
+  }
 
   void _showSuccessDialog() {
     showDialog(
@@ -59,14 +121,17 @@ class _AddAccountState extends State<AddAccount> {
     );
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
+  Future<String?> _uploadProfileImage() async {
+    if (_profileImage != null) {
+      String imageName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      TaskSnapshot snapshot = await FirebaseStorage.instance
+          .ref()
+          .child('profile_images/$imageName')
+          .putFile(_profileImage!);
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
     }
+    return null;
   }
 
   void _saveUser() async {
@@ -93,32 +158,48 @@ class _AddAccountState extends State<AddAccount> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        final userDoc = FirebaseFirestore.instance.collection('accounts').doc(user.email);
+        final userDocRef = FirebaseFirestore.instance.collection('accounts').doc(user.email);
+        final userDocSnapshot = await userDocRef.get();
+        final existingData = userDocSnapshot.data();
 
-        // Prepare data to be saved
-        Map<String, dynamic> userData = {
-          'name': nameController.text,
-          'address': addressController.text,
-          'province': strProvince,
-          'city': strCity,
-          'postal_code': posCode.text,
-          'phone_number': phoneNumberController.text,
-          'is_primary_address': isPrimaryAddress,
-        };
+        Map<String, dynamic> updatedData = {};
 
-        // Add profile image if available
-        if (_profileImage != null) {
-          String imageName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-          TaskSnapshot snapshot = await FirebaseStorage.instance
-              .ref()
-              .child('profile_images/$imageName')
-              .putFile(_profileImage!);
-
-          String downloadUrl = await snapshot.ref.getDownloadURL();
-          userData['profile_image'] = downloadUrl;
+        if (nameController.text != existingData?['name']) {
+          updatedData['name'] = nameController.text;
+        }
+        if (addressController.text != existingData?['address']) {
+          updatedData['address'] = addressController.text;
+        }
+        if (selectedLatitude != existingData?['latitude']) {
+          updatedData['latitude'] = selectedLatitude;
+        }
+        if (selectedLongitude != existingData?['longitude']) {
+          updatedData['longitude'] = selectedLongitude;
+        }
+        if (strProvince != existingData?['province']) {
+          updatedData['province'] = strProvince;
+        }
+        if (strCity != existingData?['city']) {
+          updatedData['city'] = strCity;
+        }
+        if (posCode.text != existingData?['postal_code']) {
+          updatedData['postal_code'] = posCode.text;
+        }
+        if (phoneNumberController.text != existingData?['phone_number']) {
+          updatedData['phone_number'] = phoneNumberController.text;
+        }
+        if (isPrimaryAddress != existingData?['is_primary_address']) {
+          updatedData['is_primary_address'] = isPrimaryAddress;
         }
 
-        await userDoc.set(userData);
+        String? profileImageUrl = await _uploadProfileImage();
+        if (profileImageUrl != null) {
+          updatedData['profile_image'] = profileImageUrl;
+        }
+
+        if (updatedData.isNotEmpty) {
+          await userDocRef.update(updatedData);
+        }
 
         Navigator.of(context).pop(); // Close the progress dialog
         _showSuccessDialog();
@@ -137,18 +218,48 @@ class _AddAccountState extends State<AddAccount> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(
+          isSeller ? 'Store' : 'Profile',
+        ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20.0),
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: fetchUserProfileStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return Center(child: Text('No user data found'));
+          }
+
+          final data = snapshot.data!.data();
+
+          if (data != null) {
+            nameController.text = data['name'] ?? '';
+            addressController.text = data['address'] ?? '';
+            phoneNumberController.text = data['phone_number'] ?? '';
+            posCode.text = data['postal_code'] ?? '';
+            selectedLatitude = data['latitude'];
+            selectedLongitude = data['longitude'];
+            strProvince = data['province'];
+            strCity = data['city'];
+            isPrimaryAddress = data['is_primary_address'] ?? false;
+
+            if (data['profile_image'] != null) {
+              _profileImageUrl = data['profile_image'] as String;
+            }
+          }
+
+          return ListView(
+          padding: const EdgeInsets.all(20.0),
         children: [
           Center(
             child: Stack(
@@ -157,11 +268,13 @@ class _AddAccountState extends State<AddAccount> {
                   radius: 50,
                   backgroundColor: Colors.grey[300],
                   backgroundImage: _profileImage != null
-                      ? FileImage(_profileImage!)
+                      ? FileImage(_profileImage!) as ImageProvider<Object>
+                      : _profileImageUrl != null
+                      ? NetworkImage(_profileImageUrl!)
                       : null,
-                  child: _profileImage == null
+                  child: (_profileImage == null && _profileImageUrl == null)
                       ? Icon(
-                    Icons.person,
+                    isSeller ? Icons.store : Icons.person,
                     color: Colors.white,
                     size: 50,
                   )
@@ -211,7 +324,7 @@ class _AddAccountState extends State<AddAccount> {
               DropdownSearch<ProvinceModel>(
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
-                    hintText: "Province",
+                    hintText: strProvince ?? 'Province',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(color: Colors.grey),
@@ -253,7 +366,7 @@ class _AddAccountState extends State<AddAccount> {
                   DropdownSearch<CityModel>(
                     dropdownDecoratorProps: DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
-                        hintText: "City",
+                        hintText: strCity ?? "City",
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                           borderSide: BorderSide(color: Colors.grey),
@@ -303,6 +416,29 @@ class _AddAccountState extends State<AddAccount> {
                           }
                         },
                       ),
+                      SizedBox(height: 24),
+                      Container(
+                        height: 400,
+                        child: Center(
+                            child: OpenStreetMapSearchAndPick(
+                                buttonColor: AppColors.primary,
+                                buttonText: 'Choose this location',
+                                locationPinIconColor: AppColors.primary,
+                                locationPinTextStyle: TextStyle(color: AppColors.primary),
+                                onPicked: (pickedData) {
+                                  print("adresssss-----");
+                                  setState(() {
+                                    selectedLatitude = pickedData.latLong.latitude;
+                                    selectedLongitude = pickedData.latLong.longitude;
+                                  });
+                                  print("------------------adresss-----------------------");
+                                  print(pickedData.latLong.latitude);
+                                  print(pickedData.latLong.longitude);
+                                  print(pickedData.address);
+                                })
+
+                        ),
+                      ),
                       const SizedBox(height: 50),
                       Button.filled(
                         onPressed: _saveUser,
@@ -313,9 +449,12 @@ class _AddAccountState extends State<AddAccount> {
                 ],
               )
             ],
-          )
+          ),
         ],
+      );
+          },
       ),
     );
   }
 }
+

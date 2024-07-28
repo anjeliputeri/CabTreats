@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../constants/colors.dart';
 
-
 class SearchInput extends StatelessWidget {
   final TextEditingController controller;
   final Function(String value)? onChanged;
@@ -24,11 +23,10 @@ class SearchInput extends StatelessWidget {
       ),
       child: TextFormField(
         onTap: onTap,
-        readOnly: onTap != null,
         controller: controller,
         onChanged: onChanged,
         decoration: InputDecoration(
-          hintText: 'Cari Produk di sini',
+          hintText: 'Cari produk di sini',
           suffixIcon: const Icon(Icons.search),
           contentPadding: const EdgeInsets.all(16.0),
           border: OutlineInputBorder(

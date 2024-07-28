@@ -18,7 +18,7 @@ class Button extends StatelessWidget {
     this.borderRadius = 16.0,
     this.icon,
     this.disabled = false,
-    this.fontSize = 16.0,
+    this.fontSize = 14.0,
   });
 
   const Button.outlined({
@@ -33,7 +33,7 @@ class Button extends StatelessWidget {
     this.borderRadius = 16.0,
     this.icon,
     this.disabled = false,
-    this.fontSize = 16.0,
+    this.fontSize = 14.0,
   });
 
   final Function() onPressed;

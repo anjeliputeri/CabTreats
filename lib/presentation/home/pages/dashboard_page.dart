@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/presentation/account/pages/account_page.dart';
+import 'package:flutter_onlineshop_app/presentation/explore/page/explore_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/order_page.dart';
@@ -23,10 +24,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   final List<Widget> _pages = [
     const HomePage(),
+    const ExplorePage(),
     const OrderPage(),
-    const Center(
-      child: Text('Explore Page Content'),
-    ),
     const AccountPage(),
   ];
 
@@ -63,16 +62,6 @@ class _DashboardPageState extends State<DashboardPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Assets.icons.order.svg(
-              colorFilter: const ColorFilter.mode(
-                AppColors.grey,
-                BlendMode.srcIn,
-              ),
-            ),
-            activeIcon: Assets.icons.order.svg(),
-            label: 'Order',
-          ),
-          BottomNavigationBarItem(
             icon: Assets.icons.search.svg(
               colorFilter: const ColorFilter.mode(
                 AppColors.grey,
@@ -81,6 +70,16 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             activeIcon: Assets.icons.search.svg(),
             label: 'Explore',
+          ),
+          BottomNavigationBarItem(
+            icon: Assets.icons.order.svg(
+              colorFilter: const ColorFilter.mode(
+                AppColors.grey,
+                BlendMode.srcIn,
+              ),
+            ),
+            activeIcon: Assets.icons.order.svg(),
+            label: 'Order',
           ),
           BottomNavigationBarItem(
             icon: Assets.icons.person.svg(

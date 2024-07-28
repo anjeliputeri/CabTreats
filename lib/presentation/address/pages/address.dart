@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_onlineshop_app/presentation/address/pages/add_address.dart';
-import 'package:flutter_onlineshop_app/presentation/address/widgets/tile_address.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/pages/payment_page.dart';
-import 'package:go_router/go_router.dart';
-import 'package:collection/collection.dart'; // Import collection package
+import 'package:flutter_onlineshop_app/core/constants/colors.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/components/buttons.dart';
 import '../../../core/components/spaces.dart';
-import '../../../core/core.dart';
-import '../../../core/router/app_router.dart';
-import '../../home/bloc/checkout/checkout_bloc.dart';
-import '../../orders/models/cart_item.dart';
+import '../../address/pages/add_address.dart';
+import '../../address/widgets/tile_address.dart';
+import '../../orders/pages/payment_page.dart';
 
 class Address extends StatefulWidget {
   const Address({Key? key}) : super(key: key);
@@ -24,6 +19,8 @@ class Address extends StatefulWidget {
 }
 
 class _AddressState extends State<Address> {
+  String _deliveryMethod = 'Pick Up';
+
   Stream<Map<String, String>> cartTotalStream() {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -79,64 +76,150 @@ class _AddressState extends State<Address> {
       appBar: AppBar(
         title: const Text('Address'),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('address')
-            .where('email', isEqualTo: user.email)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          var addresses = snapshot.data?.docs.map((doc) {
-            return doc.data() as Map<String, dynamic>;
-          }).toList() ?? [];
-
-          addresses.sort((a, b) {
-            if (a['primaryAddress'] == true && b['primaryAddress'] != true) {
-              return -1;
-            } else if (a['primaryAddress'] != true && b['primaryAddress'] == true) {
-              return 1;
-            }
-            return 0;
-          });
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(20.0),
-            itemCount: addresses.length + 1,
-            itemBuilder: (context, index) {
-              if (index < addresses.length) {
-                return TileAddress(
-                  addressData: addresses[index],
-                  isPrimary: addresses[index]['primaryAddress'] == true,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            child: AnimatedSwitcher(
+              duration: Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
                 );
-              } else {
-                return Column(
-                  children: [
-                    if (addresses.isEmpty)
-                      const Text('No address found. Please, add an address'),
-                    SizedBox(height: 24.0),
-                    Button.outlined(
+              },
+              child: Row(
+                key: ValueKey<String>(_deliveryMethod),
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _deliveryMethod == 'Pick Up' ? AppColors.primary : Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          side: BorderSide(color: AppColors.primary, width: 1),
+                        ),
+                      ),
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AddAddress(),
-                          ),
-                        );
+                        setState(() {
+                          _deliveryMethod = 'Pick Up';
+                        });
                       },
-                      label: 'Add address',
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.store,
+                            color: _deliveryMethod == 'Pick Up' ? Colors.white : AppColors.primary,
+                          ),
+                          SizedBox(width: 8.0),
+                          Text('Pick Up',
+                            style: TextStyle(
+                              color: _deliveryMethod == 'Pick Up' ? Colors.white : AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
+                  SpaceWidth(8.0),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _deliveryMethod == 'Delivery' ?  AppColors.primary : Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          side: BorderSide(color: AppColors.primary, width: 1),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _deliveryMethod = 'Delivery';
+                        });
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.delivery_dining,
+                            color: _deliveryMethod == 'Delivery' ? Colors.white : AppColors.primary,
+                          ),
+                          SizedBox(width: 8.0),
+                          Text('Delivery',
+                            style: TextStyle(
+                              color: _deliveryMethod == 'Delivery' ? Colors.white : AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('address')
+                  .where('email', isEqualTo: user.email)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                var addresses = snapshot.data?.docs.map((doc) {
+                  return doc.data() as Map<String, dynamic>;
+                }).toList() ?? [];
+
+                addresses.sort((a, b) {
+                  if (a['primaryAddress'] == true && b['primaryAddress'] != true) {
+                    return -1;
+                  } else if (a['primaryAddress'] != true && b['primaryAddress'] == true) {
+                    return 1;
+                  }
+                  return 0;
+                });
+
+                return ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  itemCount: addresses.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index < addresses.length) {
+                      return TileAddress(
+                        addressData: addresses[index],
+                        isPrimary: addresses[index]['primaryAddress'] == true,
+                      );
+                    } else {
+                      return Column(
+                        children: [
+                          if (addresses.isEmpty)
+                            const Text('No address found. Please, add an address'),
+                          SizedBox(height: 24.0),
+                          Button.outlined(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AddAddress(),
+                                ),
+                              );
+                            },
+                            label: 'Add address',
+                          ),
+                        ],
+                      );
+                    }
+                  },
+                  separatorBuilder: (context, index) => const SizedBox(height: 12.0),
                 );
-              }
-            },
-            separatorBuilder: (context, index) => const SizedBox(height: 12.0),
-          );
-        },
+              },
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -199,10 +282,10 @@ class _AddressState extends State<Address> {
                 return Button.filled(
                   onPressed: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PaymentPage()
-                        ),
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentPage(),
+                      ),
                     );
                   },
                   label: 'Checkout ($totalItem items)',

@@ -31,6 +31,12 @@ class _CateringCardState extends State<CateringCard> {
       final cartDoc = db.collection('cart').doc(user!.email);
       final snapshot = await cartDoc.get();
 
+      final productWithDetails = {
+        ...product,
+        'quantity': 1,
+        'added_by': product['added_by'],
+      };
+
       if (snapshot.exists) {
         var products = List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
         var existingProductIndex = products.indexWhere((item) => item['name'] == product['name']);
@@ -38,10 +44,7 @@ class _CateringCardState extends State<CateringCard> {
         if (existingProductIndex != -1) {
           products[existingProductIndex]['quantity'] += 1;
         } else {
-          products.add({
-            ...product,
-            'quantity': 1,
-          });
+          products.add(productWithDetails);
         }
         await cartDoc.update({'products': products});
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,10 +52,7 @@ class _CateringCardState extends State<CateringCard> {
         );
       } else {
         await cartDoc.set({
-          'products': [{
-            ...product,
-            'quantity': 1,
-          }],
+          'products': [productWithDetails],
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Produk ditambahkan ke keranjang')),

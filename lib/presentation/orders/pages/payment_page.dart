@@ -15,6 +15,23 @@ import '../../../core/components/spaces.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/router/app_router.dart';
 import '../../home/pages/dashboard_page.dart';
+import '../models/cart_item.dart';import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+
+import '../../../core/assets/assets.gen.dart';
+import '../../../core/components/buttons.dart';
+import '../../../core/components/spaces.dart';
+import '../../../core/constants/colors.dart';
+import '../../../core/router/app_router.dart';
+import '../../home/pages/dashboard_page.dart';
 import '../models/cart_item.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -132,10 +149,10 @@ class _PaymentPageState extends State<PaymentPage> {
                     child: Button.outlined(
                       onPressed: () {
                         Navigator.push(
-                            context,
-                        MaterialPageRoute(builder:
-                        (context) => DashboardPage(currentTab: 1),
-                        ),
+                          context,
+                          MaterialPageRoute(builder:
+                              (context) => DashboardPage(currentTab: 1),
+                          ),
                         );
                       },
                       label: 'Order Status',
@@ -185,16 +202,24 @@ class _PaymentPageState extends State<PaymentPage> {
         final cartSnapshot = await _firestore.collection('cart').doc(email).get();
         if (cartSnapshot.exists) {
           final cartData = cartSnapshot.data() as Map<String, dynamic>;
-          final products = (cartData['products'] as List).map((product) => CartItem(
-            name: product['name'],
-            price: product['price'],
-            image: product['image'],
-            quantity: product['quantity'],
-          )).toList();
+          final addedBy = cartData['added_by'];
+          print('Added by (cart): $addedBy'); // Print the added_by field from the cart
+
+          final products = (cartData['products'] as List).map((product) {
+            final addedByProduct = product['added_by'];
+            print('Product added by: $addedByProduct'); // Print the added_by field for each product
+            return {
+              'name': product['name'],
+              'price': product['price'],
+              'image': product['image'],
+              'quantity': product['quantity'],
+              'added_by': addedByProduct, // Include added_by for each product
+            };
+          }).toList();
 
           int total = 0;
           for (var item in products) {
-            total += item.price * item.quantity;
+            total += (item['price'] as int) * (item['quantity'] as int);
           }
 
           final DateTime now = DateTime.now();
@@ -202,12 +227,7 @@ class _PaymentPageState extends State<PaymentPage> {
           _firestore.collection('orders').doc(email).collection('user_orders');
 
           await userOrdersRef.add({
-            'items': products.map((item) => {
-              'name': item.name,
-              'price': item.price,
-              'image': item.image,
-              'quantity': item.quantity,
-            }).toList(),
+            'items': products,
             'totalItem': products.length,
             'totalPrice': total,
             'payment_proof_url': downloadURL,
@@ -237,10 +257,14 @@ class _PaymentPageState extends State<PaymentPage> {
               ],
             ),
           );
+        } else {
+          print('No cart data found.');
         }
+      } else {
+        print('User is not logged in.');
       }
     } catch (e) {
-      print(e);
+      print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to upload payment proof.')),
       );
@@ -250,6 +274,7 @@ class _PaymentPageState extends State<PaymentPage> {
       });
     }
   }
+
 
 
 

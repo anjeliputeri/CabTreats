@@ -25,6 +25,7 @@ class AddProductPage extends StatefulWidget {
 class _AddProductPageState extends State<AddProductPage> {
   final FirebaseFirestore db = FirebaseFirestore.instance;
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController weightController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final quill.QuillController descriptionController = quill.QuillController.basic();
 
@@ -172,6 +173,12 @@ class _AddProductPageState extends State<AddProductPage> {
                 selectedCategory = value!;
               });
             },
+          ),
+          const SpaceHeight(24.0),
+          CustomTextField(
+            controller: weightController,
+            label: 'Weight(grams)',
+            keyboardType: TextInputType.numberWithOptions(decimal: true), // Allow decimal input
           ),
           const SpaceHeight(24.0),
           ButtonImage(

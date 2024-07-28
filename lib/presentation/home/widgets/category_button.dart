@@ -15,7 +15,6 @@ class CategoryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: const BorderRadius.all(Radius.circular(8.0)),
       onTap: onPressed,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -30,7 +29,7 @@ class CategoryButton extends StatelessWidget {
             ),
             SizedBox(
               width: 80.0,
-              height: 80.0,
+              height: MediaQuery.of(context).size.height * 0.05,
               child: Text(
                 label,
                 style: const TextStyle(),
