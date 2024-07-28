@@ -85,9 +85,7 @@ class _CateringCardState extends State<CateringCard> {
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: isSeller
-            ? db.collection('Catering & Snack').where('added_by', isEqualTo: user?.email).snapshots()
-            : db.collection('Catering & Snack').snapshots(), // Adjust query based on user role
+        stream: db.collection('Catering & Snack').snapshots(), // Adjust query based on user role
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(

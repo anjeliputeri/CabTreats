@@ -89,9 +89,7 @@ class _CateringCorouselState extends State<BeverageCard> {
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: isSeller
-            ? db.collection('Beverage').where('added_by', isEqualTo: user?.email).snapshots()
-            : db.collection('Beverage').snapshots(),
+        stream: db.collection('Beverage').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(

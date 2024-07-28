@@ -153,9 +153,7 @@ class _CakeCategoryState extends State<CakeCategory> {
       body: Container(
       padding: const EdgeInsets.all(8.0),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: isSeller
-            ? db.collection('Cake & Bakery').where('added_by', isEqualTo: user?.email).snapshots()
-            : db.collection('Cake & Bakery').snapshots(), // Adjust query based on user role
+        stream: db.collection('Cake & Bakery').snapshots(), // Adjust query based on user role
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(

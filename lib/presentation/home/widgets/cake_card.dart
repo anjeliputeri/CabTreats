@@ -89,9 +89,7 @@ class _CateringCorouselState extends State<CakeCard> {
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: isSeller
-              ? db.collection('Cake & Bakery').where('added_by', isEqualTo: user?.email).snapshots()
-              : db.collection('Cake & Bakery').snapshots(),
+          stream: db.collection('Cake & Bakery').snapshots(),
           builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(

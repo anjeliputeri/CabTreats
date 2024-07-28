@@ -6,6 +6,7 @@ import 'package:flutter_onlineshop_app/core/components/buttons.dart';
 import 'package:flutter_onlineshop_app/core/constants/colors.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:flutter_onlineshop_app/presentation/product/pages/product_page.dart';
 import 'package:get/get.dart';
 import '../../orders/pages/keranjang_page.dart';
 
@@ -73,6 +74,7 @@ class _DetailProductState extends State<DetailProduct> {
           products.add({
             ...product,
             'quantity': 1,
+            'added_by': product['added_by'],
           });
         }
         await cartDoc.update({'products': products});
@@ -84,6 +86,7 @@ class _DetailProductState extends State<DetailProduct> {
           'products': [{
             ...product,
             'quantity': 1,
+            'added_by': product['added_by'],
           }],
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -272,23 +275,33 @@ class _DetailProductState extends State<DetailProduct> {
                                 stream: accountProfileImage(),
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData && snapshot.data!['name'].isNotEmpty || snapshot.hasData && snapshot.data!['address'].isNotEmpty) {
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          snapshot.data!['name'] ?? 'Data not found',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ProductPage(),
                                           ),
-                                        ),
-                                        Text(
-                                          '${snapshot.data!['province'] ?? 'Data not found'}, ${snapshot.data!['city'] ?? 'Data not found'}\n${snapshot.data!['address'] ?? 'Data not found'}',
-                                          style: TextStyle(
-                                            fontSize: 12,
+                                        );
+                                      },
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            snapshot.data!['name'] ?? 'Data not found',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
-                                        )
-                                      ],
+                                          Text(
+                                            '${snapshot.data!['province'] ?? 'Data not found'}, ${snapshot.data!['city'] ?? 'Data not found'}\n${snapshot.data!['address'] ?? 'Data not found'}',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          )
+                                        ],
+                                      ),
                                     );
                                   } else {
                                     return Container();

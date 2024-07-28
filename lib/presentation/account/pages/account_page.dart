@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/account/pages/add_account.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/order_page.dart';
+import 'package:flutter_onlineshop_app/presentation/product/pages/product_page.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/core.dart';
@@ -69,6 +70,28 @@ class _AccountPageState extends State<AccountPage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddAccount(),
+                ),
+              );
+            },
+          ),
+          if (isSeller)
+            ListTile(
+            leading: Icon(
+              Icons.file_copy_outlined,
+              color: AppColors.primary,
+            ),
+            title: const Text(
+              'Product',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductPage(),
                 ),
               );
             },

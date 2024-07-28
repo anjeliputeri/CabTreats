@@ -89,9 +89,7 @@ class _CateringCorouselState extends State<IceCreamCard> {
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: isSeller
-            ? db.collection('Ice Cream').where('added_by', isEqualTo: user?.email).snapshots()
-            : db.collection('Ice Cream').snapshots(),
+        stream: db.collection('Ice Cream').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(

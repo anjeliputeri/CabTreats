@@ -89,6 +89,9 @@ class $AssetsIconsGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  AssetGenImage get logoApp =>
+      const AssetGenImage('assets/images/logo.png');
+
   $AssetsImagesBanksGen get banks => const $AssetsImagesBanksGen();
 
   /// File path: assets/images/banner1.png

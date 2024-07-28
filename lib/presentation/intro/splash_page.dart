@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/assets/assets.gen.dart';
 import '../../core/constants/colors.dart';
 import '../../core/router/app_router.dart';
 
@@ -42,13 +43,16 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      body: Center(
+        child: Assets.images.logoApp.image(),
+      ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(30.0),
+        padding: const EdgeInsets.all(30.0),
         child: Text(
-          'Code with Bahri',
+          'CabTreats',
           style: TextStyle(
-            color: AppColors.grey,
+            color: Color(0XFFDB1A1B),
             fontWeight: FontWeight.w600,
           ),
           textAlign: TextAlign.center,
