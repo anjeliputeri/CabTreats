@@ -186,7 +186,7 @@ class _AddressState extends State<Address> {
               ),
             ),
           ),
-          Expanded(
+          _deliveryMethod == 'Pick Up' ? Container() : Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('address')
@@ -292,6 +292,8 @@ class _AddressState extends State<Address> {
               },
             ),
           ),
+
+          
         ],
       ),
       bottomNavigationBar: Padding(

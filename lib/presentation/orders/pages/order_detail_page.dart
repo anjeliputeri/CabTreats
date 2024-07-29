@@ -37,18 +37,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   bool _loading = true;
   final user = FirebaseAuth.instance.currentUser;
   var subtotal = 0;
+  var deliveryMethod = "";
 
   @override
   void initState() {
-    context.read<CostBloc>().add(CostEvent.getCost(
-          origin: '5779',
-          destination: '2103',
-          weight: 1000,
-          courier: 'jne',
-        ));
     super.initState();
+    _initialize();
   }
 
+  Future<void> _initialize() async {
+    final dMethod = context.read<CheckoutBloc>().state.maybeWhen(
+        orElse: () => "",
+        loaded: (_, addressId, __, ___, ____, _____, ______, delivery) {
+          return delivery;
+        });
+    setState(() {
+      deliveryMethod = dMethod;
+    });
+  }
   Stream<Map<String, String>> cartTotalStream() {
     return FirebaseFirestore.instance
         .collection('cart')
@@ -111,7 +117,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         children: [
           TileCart(),
           const SpaceHeight(36.0),
-          const _SelectShipping(),
+          deliveryMethod == 'Delivery' ? _SelectShipping() : Container(),
           // const _ShippingSelected(),
           const SpaceHeight(36.0),
           const Divider(),
@@ -266,7 +272,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               },
             );
               return Button.filled(
-                disabled: shippingCost == 0,
+                disabled: shippingCost == 0 && deliveryMethod == "Delivery",
                 onPressed: () {
                   context.goNamed(
                     RouteConstants.payment,
@@ -445,12 +451,6 @@ class _SelectShippingState extends State<_SelectShipping> {
 
       try {
         print("call api courier");
-
-        print("dest lat: ${destinationLatitude}");
-        print("dest long: ${destinationLongitude}");
-        print("vendor email: $vendorEmail");
-        print("origin lat: ${originLatitude}");
-        print("origin long: ${originLongitude}");
         final courierCostRequest = CourierCostRequestModel(
             originLatitude: originLatitude,
             originLongitude: originLongitude,

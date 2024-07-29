@@ -43,25 +43,6 @@ class TrackingHorizontal extends StatelessWidget {
         ),
         const SpaceHeight(4.0),
         if (trackRecord.status != TrackRecordStatus.selesai) ...[
-          const Text(
-            'Estimasi tiba : 20 Januari 2024',
-            style: TextStyle(
-              fontSize: 16,
-            ),
-          ),
-          const SpaceHeight(20.0),
-          const Text(
-            'Pesanan dikemas Penjual',
-            style: TextStyle(
-              fontSize: 16,
-            ),
-          ),
-          const Text(
-            'Januari 14, 22:36',
-            style: TextStyle(
-              color: AppColors.grey,
-            ),
-          ),
           const SpaceHeight(30.0),
           Button.outlined(
             disabled: trackRecord.status == TrackRecordStatus.dikirim,

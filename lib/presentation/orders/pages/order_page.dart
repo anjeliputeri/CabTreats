@@ -38,7 +38,7 @@ class _OrderPageState extends State<OrderPage> {
       final data = doc.data() as Map<String, dynamic>;
       return {
         'id': doc.id,
-        'waybill_id': data['waybill_id'] ?? 'Unknown',
+        'waybill_id': data['waybill_id'] ?? 'Pickup',
         'status': data['status'] ?? 'Unknown',
         'itemCount': data['totalItem'] ?? 0,
         'price': data['totalPrice'] ?? 0.0,

@@ -45,7 +45,7 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Assets.images.logoApp.image(),
+        child: Assets.images.logo.image(),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(30.0),

@@ -1,16 +1,12 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_onlineshop_app/core/router/app_router.dart';
+import 'package:flutter_onlineshop_app/core/core.dart';
 import 'package:flutter_onlineshop_app/data/models/requests/courier_cost_request_model.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/widgets/product_tile.dart';
-
-import 'package:go_router/go_router.dart';
-
-import '../../../core/components/buttons.dart';
 import '../../../core/components/spaces.dart';
-import '../../../core/core.dart';
-import '../models/track_record_model.dart';
 
 class TrackingOrderPage extends StatefulWidget {
   final String orderId;
@@ -26,55 +22,33 @@ class TrackingOrderPage extends StatefulWidget {
 class _TrackingOrderPageState extends State<TrackingOrderPage> {
   List<OrderItem> orders = [];
   Map<String, dynamic> order = {};
-  
-  final List<TrackRecordModel> trackRecords = [
-    TrackRecordModel(
-      title: 'Pesanan Anda belum dibayar',
-      status: TrackRecordStatus.belumBayar,
-      isActive: true,
-      updatedAt: DateTime.now().subtract(const Duration(days: 3)),
-    ),
-    TrackRecordModel(
-      title: 'Pesanan Anda sedang disiapkan',
-      status: TrackRecordStatus.dikemas,
-      isActive: true,
-      updatedAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    TrackRecordModel(
-      title: 'Pesanan Anda dalam pengiriman',
-      status: TrackRecordStatus.dikirim,
-      isActive: true,
-      updatedAt: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    TrackRecordModel(
-      title: 'Pesanan Anda telah tiba',
-      status: TrackRecordStatus.selesai,
-      isActive: true,
-      updatedAt: DateTime.now(),
-    ),
-  ];
+  bool _isLoading = true;
 
   final user = FirebaseAuth.instance.currentUser;
 
-    @override
+  @override
   void initState() {
     super.initState();
     fetchOrders();
   }
 
   Future<void> fetchOrders() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     final fetchedOrders = await fetchOrderItems(widget.orderId);
+    
     setState(() {
       orders = fetchedOrders;
+      _isLoading = false;
     });
   }
-
-
 
   Future<List<OrderItem>> fetchOrderItems(String orderId) async {
     final orderSnapshot = await FirebaseFirestore.instance
         .collection('orders')
-        .doc(user!.email) 
+        .doc(user!.email)
         .collection('user_orders')
         .doc(orderId)
         .get();
@@ -88,11 +62,10 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
 
       return items.map((item) {
         return OrderItem(
-         name: item['name'],
-         quantity: item['quantity'],
-         price: item['price'],
-         image: item['image'],
-         
+          name: item['name'],
+          quantity: item['quantity'],
+          price: item['price'],
+          image: item['image'],
         );
       }).toList();
     }
@@ -100,148 +73,212 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
     return [];
   }
 
+  var statusColors = {
+    "waiting verification": Color.fromARGB(255, 243, 149, 33),
+    "paid": Color.fromARGB(255, 16, 185, 109),
+    "vendor approved": Color.fromARGB(255, 149, 33, 243),
+    "order processed": Color.fromARGB(255, 33, 149, 243),
+    "shipping": Color.fromARGB(255, 243, 149, 33),
+    "delivered": Color.fromARGB(255, 243, 33, 149),
+    "completed": Color.fromARGB(255, 33, 243, 149),
+    "rejected": Color.fromARGB(255, 243, 33, 33),
+  };
+
+  var statusMessages = {
+    "waiting verification": "Menunggu verifikasi pembayaran",
+    "paid": "Pembayaran diterima, menunggu persetujuan vendor",
+    "vendor approved": "Vendor telah menyetujui pesanan Anda",
+    "order processed": "Pesanan Anda sedang diproses",
+    "shipping": "Pesanan Anda sedang dikirim",
+    "delivered": "Pesanan Anda telah sampai",
+    "completed": "Pesanan selesai",
+    "rejected": "Pesanan ditolak",
+  };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail Orders'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20.0),
-        children: [
-           ListView.separated(
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(20.0),
+              children: [
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: statusColors[order["status"]] ?? Colors.grey,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Center(
+                                  child: Text(
+                                order["status"]?.replaceAll("_", " ").toUpperCase() ?? "",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              )),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Center(
+                                  child: Text(statusMessages[order["status"]] ?? "")),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+                Divider(
+                  color: const Color.fromARGB(255, 215, 213, 213),
+                  height: 20,
+                ),
+                order["delivery_method"] == 'Delivery' ? 
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildSection(
+                      iconColor: Colors.red,
+                      title: 'Diambil dari',
+                      placeName: "${order["origin"]["contact_name"]}",
+                      address: order["origin"]["address"],
+                    ),
+                    buildSection(
+                      iconColor: Colors.green,
+                      title: 'Diantar ke',
+                      placeName: order["destination"]["address"],
+                      address: "${order["destination"]["contact_name"]} (${order["destination"]["contact_phone"]})",
+                    ),
+                  ],
+                )
+                : Container(),
+                Divider(
+                  color: const Color.fromARGB(255, 215, 213, 213),
+                  height: 20,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: const Text(
+                    'Rincian Pesananmu',
+                  ),
+                ),
+                ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: orders.length,
                   itemBuilder: (context, index) => ProductTile(
                     data: orders[index],
                   ),
-                  separatorBuilder: (context, index) =>
-                      const SpaceHeight(16.0),
+                  separatorBuilder: (context, index) => const SpaceHeight(16.0),
                 ),
-          const SpaceHeight(20.0),
-                  // TrackingHorizontal(trackRecords: trackRecords),
-                  Button.outlined(
-                    onPressed: () {
-                      context.pushNamed(
-                        RouteConstants.shippingDetail,
-                        pathParameters: PathParameters().toMap(),
-                        extra: "resi",
-                      );
-                    },
-                    label: 'Detail pelacakan pengiriman',
+                Divider(
+                  color: const Color.fromARGB(255, 215, 213, 213),
+                  height: 20,
+                ),
+                 _buildRow("Subtotal Pesanan (${order["totalItem"]} menu)", "${(order["sub_total_price"] as int).currencyFormatRp}"),
+                 _buildRow("Biaya Pengiriman", "${(order["shipping_cost"] as int).currencyFormatRp}"),
+                 _buildRow("Biaya Layanan", "${4000.currencyFormatRp}"),
+                 _buildRow("Total", "${(order["totalPrice"] as int).currencyFormatRp}", isTotal: true),
+                
+              ],
+            ),
+    );
+  }
+
+  Widget buildSection({
+    required Color iconColor,
+    required String title,
+    required String placeName,
+    required String address,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      color: Colors.white,
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.circle, color: iconColor),
+                SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: iconColor,
+                    fontSize: 16,
                   ),
-                  const SpaceHeight(20.0),
-                  const Text(
-                    'Info Pengiriman',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
-                  const SpaceHeight(20.0),
-                  const Text(
-                    'Alamat Pesanan',
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    order[""],
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SpaceHeight(16.0),
-                  const Text(
-                    'Penerima',
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    "ihsan",
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text(
+              placeName,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            Text(
+              address,
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildRow(String label, String value, {bool isDiscount = false, bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 16,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 16,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isDiscount ? Colors.red : Colors.black,
+              decoration: isDiscount ? TextDecoration.lineThrough : TextDecoration.none,
+            ),
+          ),
         ],
-      )
+      ),
     );
   }
 }
-
-
-
-// BlocBuilder<OrderDetailBloc, OrderDetailState>(
-//         builder: (context, state) {
-//           return state.maybeWhen(
-//             orElse: () {
-//               return const Center(
-//                 child: Text('No Data'),
-//               );
-//             },
-//             loaded: (orderDetail) {
-//               return ListView(
-//                 padding: const EdgeInsets.all(20.0),
-//                 children: [
-//                   ListView.separated(
-//                     shrinkWrap: true,
-//                     physics: const NeverScrollableScrollPhysics(),
-//                     itemCount: orders.length,
-//                     itemBuilder: (context, index) => ProductTile(
-//                       data: orderDetail.orderItems![index],
-//                     ),
-//                     separatorBuilder: (context, index) =>
-//                         const SpaceHeight(16.0),
-//                   ),
-//                   const SpaceHeight(20.0),
-//                   // TrackingHorizontal(trackRecords: trackRecords),
-//                   Button.outlined(
-//                     onPressed: () {
-//                       context.pushNamed(
-//                         RouteConstants.shippingDetail,
-//                         pathParameters: PathParameters().toMap(),
-//                         extra: orderDetail.shippingResi.toString(),
-//                       );
-//                     },
-//                     label: 'Detail pelacakan pengiriman',
-//                   ),
-//                   const SpaceHeight(20.0),
-//                   const Text(
-//                     'Info Pengiriman',
-//                     style: TextStyle(
-//                       fontSize: 20,
-//                     ),
-//                   ),
-//                   const SpaceHeight(20.0),
-//                   const Text(
-//                     'Alamat Pesanan',
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                     ),
-//                   ),
-//                   Text(
-//                     orderDetail.address!.fullAddress!,
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                     ),
-//                   ),
-//                   const SpaceHeight(16.0),
-//                   const Text(
-//                     'Penerima',
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                     ),
-//                   ),
-//                   Text(
-//                     orderDetail.user!.name!,
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                     ),
-//                   ),
-//                 ],
-//               );
-//             },
-//           );
-//         },
-//       ),

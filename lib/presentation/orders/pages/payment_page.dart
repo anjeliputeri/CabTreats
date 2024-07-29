@@ -20,7 +20,8 @@ import '../../../core/components/spaces.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/router/app_router.dart';
 import '../../home/pages/dashboard_page.dart';
-import '../models/cart_item.dart';import 'dart:io';
+import '../models/cart_item.dart';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -91,6 +92,8 @@ class _PaymentPageState extends State<PaymentPage> {
       };
     });
   }
+
+  var deliveryMethod = "";
 
   File? _paymentProof;
   List<CartItem> _cartItems = [];
@@ -168,6 +171,14 @@ class _PaymentPageState extends State<PaymentPage> {
         loaded: (_, addressId, __, ___, ____, _____, ______, ________) {
           return addressId;
         });
+    final dMethod = context.read<CheckoutBloc>().state.maybeWhen(
+        orElse: () => "",
+        loaded: (_, addressId, __, ___, ____, _____, ______, delivery) {
+          return delivery;
+        });
+    setState(() {
+      deliveryMethod = dMethod;
+    });
 
     DocumentSnapshot addressSnapshot = await FirebaseFirestore.instance
         .collection('address')
@@ -182,7 +193,12 @@ class _PaymentPageState extends State<PaymentPage> {
         destinationContactName = addressData['name'];
         destinationContactPhone = addressData['phoneNumber'];
         destinationEmail = addressData['email'];
+       
         destinationAddress = addressData['address'];
+      });
+    } else {
+      setState(() {
+          destinationEmail = _auth.currentUser!.email!;
       });
     }
   }
@@ -253,7 +269,7 @@ class _PaymentPageState extends State<PaymentPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => DashboardPage(currentTab: 1),
+                            builder: (context) => DashboardPage(currentTab: 2),
                           ),
                         );
                       },
@@ -320,6 +336,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
     var shippingService = "";
     var shippingCost = 0;
+    var deliveryMethod = "";
     var subTotalPrice = 0;
     var addressId = "";
     var vendorEmail = orderItems[0].vendorEmail;
@@ -329,8 +346,10 @@ class _PaymentPageState extends State<PaymentPage> {
             shippingService = "";
             shippingCost = 0;
             subTotalPrice = 0;
+            deliveryMethod = "";
           },
-          loaded: (_, address, ___, shippService, shippCost, ____, subTotal, ________) =>
+          loaded: (_, address, ___, shippService, shippCost, ____, subTotal,
+                  dmethod) =>
               {
             print("shippingService: $shippingService"),
             setState(() {
@@ -338,6 +357,7 @@ class _PaymentPageState extends State<PaymentPage> {
               shippingCost = shippCost;
               subTotalPrice = subTotal;
               addressId = address;
+              deliveryMethod = dmethod;
             }),
           },
         );
@@ -349,44 +369,39 @@ class _PaymentPageState extends State<PaymentPage> {
 
     if (vendorSnapshot.exists) {
       var vendorData = vendorSnapshot.data() as Map<String, dynamic>;
+
       var originLatitude = vendorData['latitude'];
       var originLongitude = vendorData['longitude'];
-      print("shipping_service: ${shippingService.split('-')[0].toLowerCase()}");
-      print("courier_type: ${shippingService.split('-')[1].toLowerCase()}");
-      print("email: ${vendorEmail}");
-      final orderRequest = OrderRequest(
-        shipperContactName: vendorData['name'],
-        shipperContactPhone: vendorData['phone_number'],
-        shipperContactEmail: vendorEmail,
-        shipperOrganization: 'CapTreats',
-        originContactName: vendorData['name'],
-        originContactPhone: vendorData['phone_number'],
-        originAddress: vendorEmail,
-        originNote: '',
-        originCoordinate:
-            Coordinate(latitude: originLatitude, longitude: originLongitude),
-        destinationContactName: destinationContactName,
-        destinationContactPhone: destinationContactPhone,
-        destinationContactEmail: destinationEmail,
-        destinationAddress: destinationAddress,
-        destinationCoordinate: Coordinate(
-            latitude: destinationLatitude, longitude: destinationLongitude),
-        courierCompany:
-            shippingService.split('-')[0].toLowerCase().replaceAll(" ", ""),
-        courierType:
-            shippingService.split('-')[1].toLowerCase().replaceAll(" ", ""),
-        deliveryType: 'now',
-        items: orderItems,
-      );
-
-      try {
+      if (deliveryMethod == 'Delivery') {
+        final orderRequest = OrderRequest(
+          shipperContactName: vendorData['name'],
+          shipperContactPhone: vendorData['phone_number'],
+          shipperContactEmail: vendorEmail,
+          shipperOrganization: 'CapTreats',
+          originContactName: vendorData['name'],
+          originContactPhone: vendorData['phone_number'],
+          originAddress: vendorData['address'],
+          originNote: '',
+          originCoordinate:
+              Coordinate(latitude: originLatitude, longitude: originLongitude),
+          destinationContactName: destinationContactName,
+          destinationContactPhone: destinationContactPhone,
+          destinationContactEmail: destinationEmail,
+          destinationAddress: destinationAddress,
+          destinationCoordinate: Coordinate(
+              latitude: destinationLatitude, longitude: destinationLongitude),
+          courierCompany:
+              shippingService.split('-')[0].toLowerCase().replaceAll(" ", ""),
+          courierType:
+              shippingService.split('-')[1].toLowerCase().replaceAll(" ", ""),
+          deliveryType: 'now',
+          items: orderItems,
+        );
         final orderResponse = await createOrder(orderRequest);
-        print(orderResponse);
         setState(() {
           biteshipId = orderResponse.id;
           waybillId = orderResponse.courier.waybillId;
         });
-        print('Order created: ${orderResponse.id}');
 
         try {
           final User? user = _auth.currentUser;
@@ -438,8 +453,13 @@ class _PaymentPageState extends State<PaymentPage> {
                 'totalItem': products.length,
                 'totalPrice': shippingCost + subTotalPrice,
                 'payment_proof_url': downloadURL,
+                'delivery_method': deliveryMethod,
+                'customer_email': user.email,
+                'customer_phone': destinationContactPhone,
+                'vendor_email': vendorEmail,
+                'vendor_phone': vendorData['phone_number'],
                 'date': now,
-                'status': 'Waiting Verification',
+                'status': 'waiting verification',
                 'shipping_service': shippingService,
                 'shipping_cost': shippingCost,
                 'sub_total_price': subTotalPrice,
@@ -490,10 +510,12 @@ class _PaymentPageState extends State<PaymentPage> {
                   'routing_code': orderResponse.courier.routingCode,
                 },
               });
-              await _firestore.collection('orders')
-                  .doc(email).set({});
+              await _firestore.collection('orders').doc(email).set({});
               await _firestore.collection('cart').doc(email).delete();
               print("order successfull");
+               context.read<CheckoutBloc>().add(
+                              CheckoutEvent.submitOrder(),
+                            );
               showDialog(
                 context: context,
                 builder: (BuildContext context) => AlertDialog(
@@ -527,7 +549,114 @@ class _PaymentPageState extends State<PaymentPage> {
             _loading = false; // Stop loading indicator
           });
         }
-      } catch (e) {
+      } else {
+        try {
+          final User? user = _auth.currentUser;
+          if (user != null) {
+            final String email = user.email!;
+            final String fileName =
+                'payment_proof_${DateTime.now().millisecondsSinceEpoch}.png';
+            final Reference storageRef = FirebaseStorage.instance
+                .ref()
+                .child('payment_proofs/$fileName');
+            await storageRef.putFile(_paymentProof!);
+            final String downloadURL = await storageRef.getDownloadURL();
+
+            // Save order directly instead of moving from cart
+            final cartSnapshot =
+                await _firestore.collection('cart').doc(email).get();
+            if (cartSnapshot.exists) {
+              final cartData = cartSnapshot.data() as Map<String, dynamic>;
+              final products = (cartData['products'] as List)
+                  .map((product) => CartItem(
+                        name: product['name'],
+                        price: product['price'],
+                        image: product['image'],
+                        quantity: product['quantity'],
+                        addedBy: product['added_by'],
+                      ))
+                  .toList();
+
+              int total = 0;
+              for (var item in products) {
+                total += item.price * item.quantity;
+              }
+
+              final DateTime now = DateTime.now();
+              final CollectionReference userOrdersRef = _firestore
+                  .collection('orders')
+                  .doc(email)
+                  .collection('user_orders');
+
+              await userOrdersRef.add({
+                'items': products
+                    .map((item) => {
+                          'name': item.name,
+                          'price': item.price,
+                          'image': item.image,
+                          'quantity': item.quantity,
+                        })
+                    .toList(),
+                'totalItem': products.length,
+                'totalPrice': shippingCost + subTotalPrice,
+                'payment_proof_url': downloadURL,
+                'delivery_method': deliveryMethod,
+                'customer_email': email,
+                'customer_phone': destinationContactPhone,
+                'vendor_email': vendorEmail,
+                'vendor_phone': vendorData['phone_number'],
+                'vendor_address': vendorData['address'],
+                'date': now,
+                'status': 'waiting verification',
+                'shipping_service': shippingService,
+                'shipping_cost': shippingCost,
+                'sub_total_price': subTotalPrice,
+              
+              });
+              await _firestore.collection('orders').doc(email).set({});
+              await _firestore.collection('cart').doc(email).delete();
+              print("order successfull");
+               context.read<CheckoutBloc>().add(
+                              CheckoutEvent.submitOrder(),
+                            );
+              showDialog(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: Text('Success'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Please wait for payment verification.'),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        buyNowTap(context);
+                      },
+                      child: Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          print(e);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to upload payment proof.')),
+          );
+        } finally {
+          setState(() {
+            _loading = false; // Stop loading indicator
+          });
+        }
+        
+
+      }
+
+      try {} catch (e) {
         print('Failed to create order: $e');
       }
     }

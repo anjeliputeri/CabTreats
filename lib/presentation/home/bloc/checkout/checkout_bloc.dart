@@ -149,6 +149,20 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     });
 
 
+    on<_SubmitOrder>((event, emit) {
+      final currentState = state as _Loaded;
+      emit(_Loaded(
+          currentState.products,
+          "",
+          "",
+          "",
+          0,
+          "",
+          0,
+          ""));
+    });
+
+
 
     //on started
     on<_Started>((event, emit) {

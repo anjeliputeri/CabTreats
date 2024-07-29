@@ -331,7 +331,11 @@ class _DetailProductState extends State<DetailProduct> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: quill.QuillEditor.basic(configurations: quill.QuillEditorConfigurations(
-                  controller: _controller!
+                  controller: _controller!,
+                  showCursor: false,
+                  disableClipboard: true,
+                  readOnlyMouseCursor: SystemMouseCursors.forbidden
+              
                   ),)
               ),
               SizedBox(height: 24),

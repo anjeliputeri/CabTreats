@@ -21,6 +21,7 @@ class ProductTile extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(10.0)),
@@ -48,30 +49,26 @@ class ProductTile extends StatelessWidget {
             ),
           ),
           const SpaceWidth(14.0),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                data!.name!,
+                "${data.quantity} x ${data!.name}",
                 style: const TextStyle(
                   fontSize: 16,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
-              Row(
-                children: [
-                  Text(
-                    '${data!.price?.currencyFormatRp} x ${data.quantity} = ${(data!.price! * data.quantity!).currencyFormatRp}',
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+              SpaceWidth(10),
+              Text(
+                "${(data!.price! * data.quantity!).currencyFormatRp}",
+                style: const TextStyle(
+                  fontSize: 16,
+                ),
+              )
             ],
-          ),
+            ),
+         
         ],
       ),
     );

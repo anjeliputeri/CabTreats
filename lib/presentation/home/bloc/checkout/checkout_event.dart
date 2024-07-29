@@ -16,6 +16,7 @@ class CheckoutEvent with _$CheckoutEvent {
 
   const factory CheckoutEvent.addSubTotalPrice(int subtotal) = _AddSubTotalPrice;
   const factory CheckoutEvent.addDeliveryMethod(String deliveryMethod) = _AddDeliveryMethod;
+  const factory CheckoutEvent.submitOrder() = _SubmitOrder;
 
       
 }

@@ -89,9 +89,6 @@ class $AssetsIconsGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
-  AssetGenImage get logoApp =>
-      const AssetGenImage('assets/images/logo.png');
-
   $AssetsImagesBanksGen get banks => const $AssetsImagesBanksGen();
 
   /// File path: assets/images/banner1.jpg
@@ -109,6 +106,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/google.png
   AssetGenImage get google => const AssetGenImage('assets/images/google.png');
 
+  /// File path: assets/images/logo.png
+  AssetGenImage get logo => const AssetGenImage('assets/images/logo.png');
+
   /// File path: assets/images/oops.png
   AssetGenImage get oops => const AssetGenImage('assets/images/oops.png');
 
@@ -123,7 +123,7 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<AssetGenImage> get values =>
-      [banner1, banner2, banner3, google, oops, payment, processOrder];
+      [banner1, banner2, banner3, google, logo, oops, payment, processOrder];
 }
 
 class $AssetsImagesBanksGen {
