@@ -17,6 +17,7 @@ import 'package:flutter_onlineshop_app/presentation/orders/widgets/tile_cart.dar
 import 'package:flutter_onlineshop_app/presentation/product/pages/add_product_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/widget/beverage_product.dart';
 import 'package:flutter_onlineshop_app/presentation/product/widget/cake_product.dart';
+import 'package:flutter_onlineshop_app/presentation/product/widget/cake_seller.dart';
 import 'package:flutter_onlineshop_app/presentation/product/widget/ice_product.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -38,12 +39,16 @@ import '../../orders/models/cart_provider.dart';
 
 import 'package:badges/badges.dart' as badges;
 
+import '../widget/beverage_seller.dart';
 import '../widget/catering_product.dart';
+import '../widget/catering_seller.dart';
+import '../widget/ice_seller.dart';
 
 class ProductSeller extends StatefulWidget {
   final String addedBy;
+  final String name;
 
-  const ProductSeller({Key? key, required this.addedBy}) : super(key: key);
+  const ProductSeller({Key? key, required this.addedBy, required this.name}) : super(key: key);
 
   @override
   State<ProductSeller> createState() => _ProductSellerState();
@@ -70,22 +75,22 @@ class _ProductSellerState extends State<ProductSeller> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product'),
+        title: Text(widget.name),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           SearchInput(
             controller: searchController,
-            onTap: () {
-            },
+            onTap: () {},
           ),
-          CateringProduct(searchQuery: searchQuery),
-          CakeProduct(searchQuery: searchQuery),
-          BeverageProduct(searchQuery: searchQuery),
-          IceProduct(searchQuery: searchQuery),
+          CateringSeller(searchQuery: searchQuery, addedBy: widget.addedBy),
+          CakeSeller(searchQuery: searchQuery, addedBy: widget.addedBy),
+          BeverageSeller(searchQuery: searchQuery, addedBy: widget.addedBy),
+          IceSeller(searchQuery: searchQuery, addedBy: widget.addedBy),
         ],
       ),
     );
   }
 }
+

@@ -30,6 +30,12 @@ class _CakeProductState extends State<CakeProduct> {
   final user = FirebaseAuth.instance.currentUser;
   bool isSeller = false;
 
+  @override
+  void initState() {
+    super.initState();
+    fetchUserRole();
+  }
+
   void addToCart(Map<String, dynamic> product) async {
     if (user != null) {
       final cartDoc = db.collection('cart').doc(user!.email);
@@ -103,13 +109,6 @@ class _CakeProductState extends State<CakeProduct> {
         }
 
         var data = snapshot.data!.docs;
-        if (data.isEmpty) {
-          return Center(
-            child: Text(
-              'No product available',
-            ),
-          );
-        }
 
         var filteredData = data.where((doc) {
           var product = doc.data();

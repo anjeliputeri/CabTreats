@@ -16,25 +16,19 @@ import '../../../core/core.dart';
 import '../../home/bloc/checkout/checkout_bloc.dart';
 import '../../orders/pages/keranjang_page.dart';
 
-class BeverageProduct extends StatefulWidget {
+class IceSeller extends StatefulWidget {
   final String searchQuery;
+  final String addedBy;
 
-  BeverageProduct({required this.searchQuery});
+  IceSeller({required this.searchQuery, required this.addedBy});
 
   @override
-  State<BeverageProduct> createState() => _BeverageProductState();
+  State<IceSeller> createState() => _IceSellerState();
 }
 
-class _BeverageProductState extends State<BeverageProduct> {
+class _IceSellerState extends State<IceSeller> {
   var db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
-  bool isSeller = false;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUserRole();
-  }
 
   void addToCart(Map<String, dynamic> product) async {
     if (user != null) {
@@ -79,23 +73,12 @@ class _BeverageProductState extends State<BeverageProduct> {
     return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
   }
 
-  void fetchUserRole() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      final userRole = userDoc.data()?['role'] as String?;
-      setState(() {
-        isSeller = userRole == 'Seller';
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: isSeller
-          ? db.collection('Beverage').where('added_by', isEqualTo: user?.email).snapshots()
-          : db.collection('Beverage').snapshots(),
+      stream: db.collection('Ice Cream')
+          .where('added_by', isEqualTo: widget.addedBy)
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -177,7 +160,7 @@ class _BeverageProductState extends State<BeverageProduct> {
                               Row(
                                 children: [
                                   Text(
-                                    harga != null ? formatPrice(harga) : 'Rp 10.000',
+                                    formatPrice(harga),
                                     style: const TextStyle(
                                       color: AppColors.primary,
                                       fontSize: 14,

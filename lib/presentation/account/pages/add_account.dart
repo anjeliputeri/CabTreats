@@ -135,87 +135,39 @@ class _AddAccountState extends State<AddAccount> {
   }
 
   void _saveUser() async {
-    if (nameController.text.isEmpty ||
-        addressController.text.isEmpty ||
-        phoneNumberController.text.isEmpty ||
-        posCode.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please, fill in all fields')),
-      );
-      return;
-    }
+    final user = _auth.currentUser;
+    if (user != null) {
+      final userDocRef = FirebaseFirestore.instance.collection('accounts').doc(user.email);
+      final userDocSnapshot = await userDocRef.get();
+      final existingData = userDocSnapshot.data();
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
+      Map<String, dynamic> updatedData = {
+        'name': nameController.text,
+        'address': addressController.text,
+        'latitude': selectedLatitude,
+        'longitude': selectedLongitude,
+        'province': strProvince,
+        'city': strCity,
+        'postal_code': posCode.text,
+        'phone_number': phoneNumberController.text,
+        'is_primary_address': isPrimaryAddress,
+        'profile_image': await _uploadProfileImage() ?? existingData?['profile_image'],
+      };
 
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        final userDocRef = FirebaseFirestore.instance.collection('accounts').doc(user.email);
-        final userDocSnapshot = await userDocRef.get();
-        final existingData = userDocSnapshot.data();
-
-        Map<String, dynamic> updatedData = {};
-
-        if (nameController.text != existingData?['name']) {
-          updatedData['name'] = nameController.text;
-        }
-        if (addressController.text != existingData?['address']) {
-          updatedData['address'] = addressController.text;
-        }
-        if (selectedLatitude != existingData?['latitude']) {
-          updatedData['latitude'] = selectedLatitude;
-        }
-        if (selectedLongitude != existingData?['longitude']) {
-          updatedData['longitude'] = selectedLongitude;
-        }
-        if (strProvince != existingData?['province']) {
-          updatedData['province'] = strProvince;
-        }
-        if (strCity != existingData?['city']) {
-          updatedData['city'] = strCity;
-        }
-        if (posCode.text != existingData?['postal_code']) {
-          updatedData['postal_code'] = posCode.text;
-        }
-        if (phoneNumberController.text != existingData?['phone_number']) {
-          updatedData['phone_number'] = phoneNumberController.text;
-        }
-        if (isPrimaryAddress != existingData?['is_primary_address']) {
-          updatedData['is_primary_address'] = isPrimaryAddress;
-        }
-
-        String? profileImageUrl = await _uploadProfileImage();
-        if (profileImageUrl != null) {
-          updatedData['profile_image'] = profileImageUrl;
-        }
-
-        if (updatedData.isNotEmpty) {
-          await userDocRef.update(updatedData);
-        }
-
-        Navigator.of(context).pop(); // Close the progress dialog
-        _showSuccessDialog();
+      if (userDocSnapshot.exists) {
+        await userDocRef.update(updatedData);
       } else {
-        Navigator.of(context).pop(); // Close the progress dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User not authenticated')),
-        );
+        await userDocRef.set(updatedData);
       }
-    } catch (e) {
-      Navigator.of(context).pop(); // Close the progress dialog
+
+      _showSuccessDialog();
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        const SnackBar(content: Text('User not authenticated')),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -234,10 +186,6 @@ class _AddAccountState extends State<AddAccount> {
 
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Center(child: Text('No user data found'));
           }
 
           final data = snapshot.data!.data();

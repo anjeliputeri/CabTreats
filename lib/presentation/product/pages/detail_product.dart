@@ -7,6 +7,7 @@ import 'package:flutter_onlineshop_app/core/constants/colors.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter_onlineshop_app/presentation/product/pages/product_page.dart';
+import 'package:flutter_onlineshop_app/presentation/product/pages/product_seller.dart';
 import 'package:get/get.dart';
 import '../../orders/pages/keranjang_page.dart';
 
@@ -100,25 +101,32 @@ class _DetailProductState extends State<DetailProduct> {
     }
   }
 
-  Stream<Map<String, dynamic>> accountProfileImage() {
+  Stream<Map<String, dynamic>> sellerProfileImage(String email) {
     return FirebaseFirestore.instance
         .collection('accounts')
-        .doc(user!.email)
+        .doc(email)
         .snapshots()
         .map((snapshot) {
       if (!snapshot.exists) {
-        return {'profile_image': '', 'name': '', 'address': '', 'province': '', 'city': ''};
+        return {
+          'profile_image': '',
+          'name': 'Data not found',
+          'address': 'Data not found',
+          'province': 'Data not found',
+          'city': 'Data not found',
+        };
       }
       var accountData = snapshot.data() as Map<String, dynamic>;
       return {
         'profile_image': accountData['profile_image'] ?? '',
-        'name': accountData['name'] ?? '',
-        'address': accountData['address'] ?? '',
-        'province': accountData['province'] ?? '',
-        'city': accountData['city'] ?? '',
+        'name': accountData['name'] ?? 'Data not found',
+        'address': accountData['address'] ?? 'Data not found',
+        'province': accountData['province'] ?? 'Data not found',
+        'city': accountData['city'] ?? 'Data not found',
       };
     });
   }
+
 
 
   @override
@@ -202,24 +210,6 @@ class _DetailProductState extends State<DetailProduct> {
                         ],
                       ),
                     ),
-                    SizedBox(width: 8),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 2,
-                        horizontal: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        'Tersedia : 50',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -235,82 +225,81 @@ class _DetailProductState extends State<DetailProduct> {
                 ),
               ),
               SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: Colors.grey[300]!),
-                    ),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Colors.grey[300]!),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Row(
                     children: [
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          StreamBuilder<Map<String, dynamic>>(
-                            stream: accountProfileImage(),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData && snapshot.data!['profile_image'].isNotEmpty) {
-                                return CircleAvatar(
-                                  radius: 30.0,
-                                  backgroundImage: NetworkImage(snapshot.data!['profile_image']),
-                                  backgroundColor: Colors.transparent,
+                      StreamBuilder<Map<String, dynamic>>(
+                        stream: sellerProfileImage(widget.product['added_by']),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            var profileImage = snapshot.data!['profile_image'];
+                            var name = snapshot.data!['name'];
+                            var address = snapshot.data!['address'];
+                            var province = snapshot.data!['province'];
+                            var city = snapshot.data!['city'];
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductSeller(
+                                      addedBy: widget.product['added_by'],
+                                      name: name,
+                                    ),
+                                  ),
                                 );
-                              } else {
-                                return CircleAvatar(
-                                  radius: 30.0,
-                                  backgroundColor: Colors.grey[300],
-                                  child: Icon(Icons.person, color: Colors.white),
-                                );
-                              }
-                            },
-                          ),
-                          SizedBox(width: 20),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              StreamBuilder<Map<String, dynamic>>(
-                                stream: accountProfileImage(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData && snapshot.data!['name'].isNotEmpty || snapshot.hasData && snapshot.data!['address'].isNotEmpty) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ProductPage(),
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 30.0,
+                                      backgroundImage: profileImage.isNotEmpty
+                                          ? NetworkImage(profileImage)
+                                          : null,
+                                      backgroundColor: profileImage.isEmpty
+                                          ? Colors.grey[300]
+                                          : Colors.transparent,
+                                      child: profileImage.isEmpty
+                                          ? Icon(Icons.person, color: Colors.white)
+                                          : null,
+                                    ),
+                                    SizedBox(width: 20),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          name.isNotEmpty ? name : 'Data not found',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                        );
-                                      },
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            snapshot.data!['name'] ?? 'Data not found',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                        ),
+                                        Text(
+                                          '${province.isNotEmpty ? province : 'Data not found'}, ${city.isNotEmpty ? city : 'Data not found'}\n${address.isNotEmpty ? address : 'Data not found'}',
+                                          style: TextStyle(
+                                            fontSize: 12,
                                           ),
-                                          Text(
-                                            '${snapshot.data!['province'] ?? 'Data not found'}, ${snapshot.data!['city'] ?? 'Data not found'}\n${snapshot.data!['address'] ?? 'Data not found'}',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    );
-                                  } else {
-                                    return Container();
-                                  }
-                                },
+                                        )
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
-                        ],
+                            );
+                          } else {
+                            return CircularProgressIndicator();
+                          }
+                        },
                       ),
                     ],
                   ),

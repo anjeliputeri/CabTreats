@@ -14,13 +14,29 @@ class CateringProduct extends StatefulWidget {
   CateringProduct({required this.searchQuery});
 
   @override
-  State<CateringProduct> createState() => _CateringExploreState();
+  State<CateringProduct> createState() => _CateringProductState();
 }
 
-class _CateringExploreState extends State<CateringProduct> {
+class _CateringProductState extends State<CateringProduct> {
   var db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
   bool isSeller = false;
+
+  @override
+  void initState() {
+    fetchUserRole();
+  }
+
+  Future<void> fetchUserRole() async {
+    final uid = user?.uid;
+    if (uid != null) {
+      final userDoc = await db.collection('users').doc(uid).get();
+      final userRole = userDoc.data()?['role'] as String?;
+      setState(() {
+        isSeller = userRole == 'Seller';
+      });
+    }
+  }
 
   void addToCart(Map<String, dynamic> product) async {
     if (user != null) {
@@ -43,17 +59,14 @@ class _CateringExploreState extends State<CateringProduct> {
           products.add(productWithDetails);
         }
         await cartDoc.update({'products': products});
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Produk ditambahkan ke keranjang')),
-        );
       } else {
         await cartDoc.set({
           'products': [productWithDetails],
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Produk ditambahkan ke keranjang')),
-        );
       }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Produk ditambahkan ke keranjang')),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Anda harus masuk untuk menambahkan ke keranjang')),
@@ -63,17 +76,6 @@ class _CateringExploreState extends State<CateringProduct> {
 
   String formatPrice(int price) {
     return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
-  }
-
-  void fetchUserRole() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      final userRole = userDoc.data()?['role'] as String?;
-      setState(() {
-        isSeller = userRole == 'Seller';
-      });
-    }
   }
 
   @override
@@ -95,14 +97,6 @@ class _CateringExploreState extends State<CateringProduct> {
         }
 
         var data = snapshot.data!.docs;
-        if (data.isEmpty) {
-          return Center(
-            child: Text(
-              'No product available',
-            ),
-          );
-        }
-
         var filteredData = data.where((doc) {
           var product = doc.data();
           var nama = product['name'].toString().toLowerCase();
@@ -166,18 +160,14 @@ class _CateringExploreState extends State<CateringProduct> {
                                 style: const TextStyle(fontSize: 14),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              SizedBox(height: 5.0),
-                              Row(
-                                children: [
-                                  Text(
-                                    harga != null ? formatPrice(harga) : 'Rp 10.000',
-                                    style: const TextStyle(
-                                      color: AppColors.primary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                              const SizedBox(height: 5.0),
+                              Text(
+                                harga != null ? formatPrice(harga) : 'Rp 10.000',
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                           ),
