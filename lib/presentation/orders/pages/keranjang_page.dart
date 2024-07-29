@@ -46,17 +46,19 @@ class _KeranjangPageState extends State<KeranjangPage> {
       if (!snapshot.exists) {
         return {
           "totalItem": "0",
-          "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(0)
+          "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ')
+              .format(0)
         };
       }
       var cartData = snapshot.data() as Map<String, dynamic>;
-      var products =(cartData['products'] as List)
-          .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-      ))
+      var products = (cartData['products'] as List)
+          .map((product) =>
+          CartItem(
+            name: product['name'],
+            price: product['price'],
+            image: product['image'],
+            quantity: product['quantity'],
+          ))
           .toList();
 
       int total = 0;
@@ -66,7 +68,8 @@ class _KeranjangPageState extends State<KeranjangPage> {
 
       return {
         "totalItem": (products.length).toString(),
-        "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(total)
+        "totalPrice": NumberFormat.currency(
+            locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(total)
       };
     });
   }
@@ -82,12 +85,13 @@ class _KeranjangPageState extends State<KeranjangPage> {
       }
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
-          .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-      ))
+          .map((product) =>
+          CartItem(
+            name: product['name'],
+            price: product['price'],
+            image: product['image'],
+            quantity: product['quantity'],
+          ))
           .toList();
 
       int totalQuantity = 0;
@@ -99,90 +103,107 @@ class _KeranjangPageState extends State<KeranjangPage> {
   }
 
   Future<void> _loadCart() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
     setState(() {
       _loading = true;
     });
 
     try {
-
       DocumentSnapshot doc = await FirebaseFirestore.instance
           .collection('cart')
-          .doc(user.email)
+          .doc(user!.email)
           .get();
 
       if (!doc.exists) {
+        setState(() {
+          _cartItems = [];
+        });
+        return;
       }
 
       var cartData = doc.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
-          .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-      ))
+          .map((product) =>
+      {
+        "name": product['name'],
+        "price": product['price'],
+        "image": product['image'],
+        "quantity": product['quantity'],
+        "added_by": product['added_by'] // Capture the added_by field separately
+      })
           .toList();
-      print("get data from firebase");
-
-
-      for (var item in products) {
-        print('Name: ${item.name}');
-        print('-------------------------');
-      }
 
       setState(() {
-        _cartItems = products.cast<CartItem>();
+        _cartItems = products.map((data) =>
+            CartItem(
+              name: data['name'],
+              price: data['price'],
+              image: data['image'],
+              quantity: data['quantity'],
+            )).toList();
         _loading = false;
       });
     } catch (e) {
       setState(() {
         _loading = false;
       });
+      print("Error loading cart: $e");
     }
   }
 
-  void _showLoadingDialog(BuildContext context) {
+  void _showWarningDialog(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
-        return Center(
-          child: CircularProgressIndicator(),
+        return AlertDialog(
+          title: Text("Warning"),
+          content: Text(
+              "There are no item in the cart. Please, add item before checkout"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => HomePage(),
+                  ),
+                );
+              },
+              child: Text('OK'),
+            ),
+          ],
         );
       },
     );
   }
 
-  void _showWarningDialog(BuildContext context) {
+  void _showProductDialog(BuildContext context) {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Warning"),
-            content: Text("There are no item in the cart. Please, add item before checkout"),
-            actions: [
-              TextButton(
-                  onPressed: (){
-                    Navigator.push(
-                        context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => HomePage(),
-                    ),
-                    );
-                  },
-                  child: Text('OK'),
-              ),
-            ],
-          );
-        },
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Warning"),
+          content: Text(
+              "Please, add products from the same store."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomePage(),
+                  ),
+                );
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  void _showWarningLogin (BuildContext context) {
+  void _showWarningLogin(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -191,10 +212,10 @@ class _KeranjangPageState extends State<KeranjangPage> {
           content: Text("Please, login to proceed with checkout"),
           actions: [
             TextButton(
-              onPressed: (){
+              onPressed: () {
                 Navigator.push(
-                    context, MaterialPageRoute(
-                    builder: (context) => LoginPage(),
+                  context, MaterialPageRoute(
+                  builder: (context) => LoginPage(),
                 ),
                 );
               },
@@ -263,9 +284,7 @@ class _KeranjangPageState extends State<KeranjangPage> {
                   onPressed: () async {
                     final isAuth = await AuthLocalDatasource().isAuth();
                     if (!isAuth) {
-                      context.pushNamed(
-                        RouteConstants.login,
-                      );
+                      context.pushNamed(RouteConstants.login);
                     } else {
                       context.goNamed(
                         RouteConstants.address,
@@ -308,26 +327,58 @@ class _KeranjangPageState extends State<KeranjangPage> {
               String totalProducts = snapshot.data!['totalItem']!;
               return Button.filled(
                 onPressed: () async {
-                  final isAuth = await AuthLocalDatasource().isAuth();
-                  if (!isAuth) {
-                    Navigator.push(
-                        context, MaterialPageRoute(
-                      builder:
-                          (context) => Address(),
-                    ),
-                    );
-                  } else {
-                    _showWarningLogin(context);
-                  }
-                },
+                    // Load cart items and show product dialog if needed
+                    DocumentSnapshot doc = await FirebaseFirestore.instance
+                        .collection('cart')
+                        .doc(user!.email)
+                        .get();
+
+                    if (doc.exists) {
+                      var cartData = doc.data() as Map<String, dynamic>;
+                      var products = (cartData['products'] as List)
+                          .map((product) =>
+                      {
+                        "name": product['name'],
+                        "price": product['price'],
+                        "image": product['image'],
+                        "quantity": product['quantity'],
+                        "added_by": product['added_by']
+                        // Capture the added_by field separately
+                      })
+                          .toList();
+
+                      Set<String> addedBySet = {};
+                      for (var item in products) {
+                        addedBySet.add(item['added_by']);
+                      }
+
+                      if (addedBySet.length > 1) {
+                        _showProductDialog(context);
+                      } else {
+                        // Proceed to address page if no product dialog needed
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Address(),
+                          ),
+                        );
+                      }
+                    } else {
+                      // Proceed to address page if cart is empty
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Address(),
+                        ),
+                      );
+                    }
+                  },
                 label: 'Checkout ($totalProducts items)',
               );
             },
           ),
-
         ],
       ),
     );
   }
 }
-
