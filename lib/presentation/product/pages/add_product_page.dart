@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_onlineshop_app/presentation/account/pages/add_account.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_onlineshop_app/core/components/button_image.dart';
 import 'package:flutter_onlineshop_app/core/components/price_text_field.dart';
@@ -67,11 +68,54 @@ class _AddProductPageState extends State<AddProductPage> {
     return ref.getDownloadURL();
   }
 
+  Future<bool> _checkUserAccount() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userDocRef = db.collection('accounts').doc(user.email);
+      final userDocSnapshot = await userDocRef.get();
+      return userDocSnapshot.exists;
+    }
+    return false;
+  }
+
+  void _showNoAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Warning'),
+          content: const Text('Please, complete your profile before adding a product.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => AddAccount(),
+                  ),
+                );
+                },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _addProduct() async {
     if (nameController.text.isEmpty || priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please, fill in all fields')),
       );
+      return;
+    }
+
+    bool userHasAccount = await _checkUserAccount();
+
+    if (!userHasAccount) {
+      _showNoAccountDialog();
       return;
     }
 
