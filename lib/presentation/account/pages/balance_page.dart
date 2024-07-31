@@ -5,14 +5,14 @@ import '../../../core/components/buttons.dart';
 import '../../../core/components/custom_text_field.dart';
 import '../../../core/components/spaces.dart';
 
-class AccountBankPage extends StatefulWidget {
-  const AccountBankPage({super.key});
+class BalancePage extends StatefulWidget {
+  const BalancePage({super.key});
 
   @override
-  State<AccountBankPage> createState() => _AccountBankPageState();
+  State<BalancePage> createState() => _BalancePageState();
 }
 
-class _AccountBankPageState extends State<AccountBankPage> {
+class _BalancePageState extends State<BalancePage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController bankController = TextEditingController();
   final TextEditingController accountNumberController = TextEditingController();
@@ -115,10 +115,10 @@ class _AccountBankPageState extends State<AccountBankPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account Bank'),
+        title: const Text('Balance'),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: [
           const SpaceHeight(24.0),
           Container(
@@ -148,7 +148,7 @@ class _AccountBankPageState extends State<AccountBankPage> {
                     ),
                     SizedBox(width: 8.0),
                     Text(
-                      'Income',
+                      'Balance',
                       style: TextStyle(
                         fontSize: 16.0,
                       ),

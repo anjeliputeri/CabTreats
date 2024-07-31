@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/account/pages/add_account.dart';
+import 'package:flutter_onlineshop_app/presentation/account/pages/balance_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/order_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/payment_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/pages/product_page.dart';
@@ -11,7 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/core.dart';
 import '../../../core/router/app_router.dart';
 import '../../auth/bloc/logout/logout_bloc.dart';
-import '../widget/bank_page.dart';
+import 'bank_page.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -117,6 +118,28 @@ class _AccountPageState extends State<AccountPage> {
               );
             },
           ),
+          if (isSeller)
+            ListTile(
+              leading: Icon(
+                Icons.monetization_on_outlined,
+                color: AppColors.primary,
+              ),
+              title: const Text(
+                'Balance',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BalancePage(),
+                  ),
+                );
+              },
+            ),
           BlocConsumer<LogoutBloc, LogoutState>(
             listener: (context, state) {
               state.maybeWhen(
