@@ -36,8 +36,13 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
     setState(() {
       _isLoading = true;
     });
+
+    print("Fetching orders--------");
+    print(widget.orderId);
+    var orderId = widget.orderId.split('-')[0];
+    var email = widget.orderId.split('-')[1];
     
-    final fetchedOrders = await fetchOrderItems(widget.orderId);
+    final fetchedOrders = await fetchOrderItems(orderId, email);
     
     setState(() {
       orders = fetchedOrders;
@@ -45,10 +50,10 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
     });
   }
 
-  Future<List<OrderItem>> fetchOrderItems(String orderId) async {
+  Future<List<OrderItem>> fetchOrderItems(String orderId, email) async {
     final orderSnapshot = await FirebaseFirestore.instance
         .collection('orders')
-        .doc(user!.email)
+        .doc(email)
         .collection('user_orders')
         .doc(orderId)
         .get();
@@ -171,7 +176,12 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                     ),
                   ],
                 )
-                : Container(),
+                : buildSection(
+                      iconColor: Colors.green,
+                      title: 'Ambil pesananmu di',
+                      placeName: "${order["vendor_phone"]}",
+                      address: order["vendor_address"],
+                    ),
                 Divider(
                   color: const Color.fromARGB(255, 215, 213, 213),
                   height: 20,
@@ -224,14 +234,14 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
           children: [
             Row(
               children: [
-                Icon(Icons.circle, color: iconColor),
-                SizedBox(width: 8),
+                Icon(Icons.circle, color: iconColor, size: 10,),
+                SizedBox(width: 5),
                 Text(
                   title,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: iconColor,
-                    fontSize: 16,
+                    fontSize: 14,
                   ),
                 ),
               ],

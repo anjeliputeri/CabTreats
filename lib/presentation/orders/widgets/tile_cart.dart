@@ -36,10 +36,7 @@ class _TileCartState extends State<TileCart> {
     return ChangeNotifierProvider(
       create: (_) => CartProvider(),
       child: StreamBuilder<DocumentSnapshot>(
-        stream: db
-            .collection('cart')
-            .doc(user.email)
-            .snapshots(),
+        stream: db.collection('cart').doc(user.email).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -58,15 +55,18 @@ class _TileCartState extends State<TileCart> {
           var cartData = snapshot.data!.data() as Map<String, dynamic>;
           var products = (cartData['products'] as List)
               .map((product) => CartItem(
-            name: product['name'],
-            price: product['price'],
-            image: product['image'],
-            quantity: product['quantity'],
-            addedBy: product['added_by'],
-          ))
+                    name: product['name'],
+                    price: product['price'],
+                    originalPrice: product['original_price'],
+                    weight: product['weight'],
+                    image: product['image'],
+                    quantity: product['quantity'],
+                    addedBy: product['added_by'],
+                  ))
               .toList();
 
-          Provider.of<CartProvider>(context, listen: false).setCartItems(products);
+          Provider.of<CartProvider>(context, listen: false)
+              .setCartItems(products);
 
           print("Products count: ${products.length}");
 
@@ -83,7 +83,8 @@ class _TileCartState extends State<TileCart> {
                     key: ValueKey('$index-${item.quantity}'),
                     padding: const EdgeInsets.only(top: 5.0),
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(10.0)),
                       child: Slidable(
                         endActionPane: ActionPane(
                           extentRatio: 0.25,
@@ -93,7 +94,8 @@ class _TileCartState extends State<TileCart> {
                               onPressed: (context) {
                                 cartProvider.deleteItem(index);
                               },
-                              backgroundColor: AppColors.primary.withOpacity(0.44),
+                              backgroundColor:
+                                  AppColors.primary.withOpacity(0.44),
                               foregroundColor: AppColors.red,
                               icon: Icons.delete_outlined,
                               borderRadius: const BorderRadius.horizontal(
@@ -115,13 +117,16 @@ class _TileCartState extends State<TileCart> {
                               Row(
                                 children: [
                                   ClipRRect(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(10.0)),
                                     child: Image.network(
                                       item.image,
                                       width: 68.0,
                                       height: 68.0,
                                       fit: BoxFit.cover,
-                                      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                      loadingBuilder: (BuildContext context,
+                                          Widget child,
+                                          ImageChunkEvent? loadingProgress) {
                                         if (loadingProgress == null) {
                                           return child;
                                         } else {
@@ -140,7 +145,8 @@ class _TileCartState extends State<TileCart> {
                                   ),
                                   const SpaceWidth(14.0),
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.name,
@@ -238,4 +244,3 @@ class _TileCartState extends State<TileCart> {
     );
   }
 }
-

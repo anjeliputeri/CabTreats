@@ -1,19 +1,11 @@
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_onlineshop_app/presentation/auth/pages/login_page.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
-import 'package:flutter_onlineshop_app/presentation/orders/widgets/order_cart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../core/components/buttons.dart';
-import '../../../core/components/spaces.dart';
-import '../../../core/core.dart';
+import 'package:rxdart/rxdart.dart';
 import '../../../core/router/app_router.dart';
-import '../../../data/datasources/auth_local_datasource.dart';
-import '../models/order_item.dart';
 
 class OrderPage extends StatefulWidget {
   const OrderPage({Key? key}) : super(key: key);
@@ -23,53 +15,41 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
-  List<OrderItem> _orderItems = [];
-  bool _loading = true;
   final user = FirebaseAuth.instance.currentUser;
   final db = FirebaseFirestore.instance;
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  Stream<List<Map<String, dynamic>>> _orderStream() {
+    var email = user!.email;
 
-  List<Map<String, dynamic>> processOrderData(QuerySnapshot snapshot) {
-    return snapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      return {
-        'id': doc.id,
-        'waybill_id': data['waybill_id'] ?? 'Pickup',
-        'status': data['status'] ?? 'Unknown',
-        'itemCount': data['totalItem'] ?? 0,
-        'price': data['totalPrice'] ?? 0.0,
-      };
-    }).toList();
-  }
+    return db.collection('orders').snapshots().switchMap((ordersSnapshot) {
+      var userOrdersStreams = ordersSnapshot.docs.map((orderDoc) {
+        return orderDoc.reference.collection('user_orders').snapshots().map((userOrdersSnapshot) {
+          return userOrdersSnapshot.docs.map((orderSubDoc) {
+            var data = orderSubDoc.data() as Map<String, dynamic>;
+            var vendorEmail = data['vendor_email'] as String?;
+            var customerEmail = data['customer_email'] as String?;
 
-  void _showWarningDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Warning"),
-          content: const Text(
-              "There are no items in the cart. Please, add items before checkout."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const HomePage(),
-                  ),
-                );
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+            if ((vendorEmail == email && data["status"] != "waiting verification") || customerEmail == email) {
+              return {
+                "id": orderSubDoc.id,
+                "waybillId": data['waybill_id'] ?? 'PICKUP',
+                "status": data['status'] ?? 'Unknown',
+                "itemCount": data['totalItem'] ?? 0,
+                "price": data['totalPrice'] ?? 0.0,
+                "vendor_email": data['vendor_email'] ?? '',
+                "customer_email": data['customer_email'] ?? '',
+              };
+            } else {
+              return null;
+            }
+          }).where((order) => order != null).toList();
+        });
+      }).toList();
+
+      return CombineLatestStream.list(userOrdersStreams).map((ordersList) {
+        return ordersList.expand((orders) => orders!).whereType<Map<String, dynamic>>().toList();
+      });
+    });
   }
 
   @override
@@ -77,9 +57,9 @@ class _OrderPageState extends State<OrderPage> {
     if (user == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Orders'),
+          title: const Text('Orders'),
         ),
-        body: Center(
+        body: const Center(
           child: Text('No user logged in'),
         ),
       );
@@ -87,49 +67,38 @@ class _OrderPageState extends State<OrderPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Orders'),
+        title: const Text('Orders'),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: db
-            .collection('orders')
-            .doc(user!.email)
-            .collection('user_orders')
-            .snapshots(),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: _orderStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text('No orders found'),
             );
           }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No orders found'));
-          }
 
-          var orders = processOrderData(snapshot.data!);
-
-          if (orders.isEmpty) {
-            return Center(child: Text('No item in the cart'));
-          }
+          var allOrders = snapshot.data!;
 
           return ListView.builder(
-            itemCount: orders.length,
+            itemCount: allOrders.length,
             itemBuilder: (context, index) {
-              var order = orders[index];
+              var order = allOrders[index];
 
               return Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 child: GestureDetector(
                   onTap: () {
                     context.pushNamed(
                       RouteConstants.trackingOrder,
                       pathParameters: PathParameters().toMap(),
-                      extra: order['id'],
+                      extra: "${order['id']}-${order['customer_email']}",
                     );
                   },
                   child: Card(
@@ -143,56 +112,72 @@ class _OrderPageState extends State<OrderPage> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'NO RESI: ${order['waybill_id']}',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  'NO RESI: ${order['waybillId']}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              SizedBox(
-                                width: 80,
-                                height: 20,
-                                child: Button.filled(
-                                  onPressed: () => {},
-                                  label: "Lacak",
-                                  fontSize: 10,
-                                ),
-                              ),
+                              user!.email! == order['vendor_email']
+                                  ? Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Padding(
+                                        padding: EdgeInsets.fromLTRB(8, 2, 8, 2),
+                                        child: Center(
+                                          child: Text(
+                                            "From your customer",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.lightBlue,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Padding(
+                                        padding: EdgeInsets.fromLTRB(8, 2, 8, 2),
+                                        child: Center(
+                                          child: Text(
+                                            "Your order",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                             ],
                           ),
-                          SizedBox(
-                            height: 20,
-                          ),
+                          const SizedBox(height: 20),
                           Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  'Status',
-                                ),
+                              const Expanded(
+                                child: Text('Status'),
                               ),
                               Text(order['status'])
                             ],
                           ),
-                          SizedBox(
-                            height: 5,
-                          ),
+                          const SizedBox(height: 5),
                           Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  'Item',
-                                ),
+                              const Expanded(
+                                child: Text('Item'),
                               ),
                               Text(order['itemCount'].toString())
                             ],
                           ),
-                          SizedBox(
-                            height: 5,
-                          ),
+                          const SizedBox(height: 5),
                           Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  'Total Harga',
-                                ),
+                              const Expanded(
+                                child: Text('Total Harga'),
                               ),
                               Text(
                                   'Rp ${NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(order['price'])}')

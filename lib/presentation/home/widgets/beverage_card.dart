@@ -45,10 +45,12 @@ class _CateringCorouselState extends State<BeverageCard> {
       final cartDoc = db.collection('cart').doc(user!.email);
       final snapshot = await cartDoc.get();
 
-      final productWithDetails = {
+       final productWithDetails = {
         ...product,
         'quantity': 1,
         'added_by': product['added_by'],
+        'weight': product['weight'],
+        'original_price': product['original_price'],
       };
 
       if (snapshot.exists) {

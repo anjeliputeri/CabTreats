@@ -38,6 +38,8 @@ class _CateringCorouselState extends State<CakeCard> {
         ...product,
         'quantity': 1,
         'added_by': product['added_by'],
+        'weight': product['weight'],
+        'original_price': product['original_price'],
       };
 
       if (snapshot.exists) {

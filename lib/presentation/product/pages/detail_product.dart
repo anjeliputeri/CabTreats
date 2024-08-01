@@ -27,18 +27,18 @@ class _DetailProductState extends State<DetailProduct> {
   final user = FirebaseAuth.instance.currentUser;
   quill.QuillController? _controller;
 
-   @override
+  @override
   void initState() {
     super.initState();
     final doc = quill.Document.fromJson(widget.product['description']);
     setState(() {
-      _controller =  quill.QuillController(
-            document: doc,
-            selection: TextSelection.collapsed(offset: 0),
-          );
+      _controller = quill.QuillController(
+        readOnly: true,
+        document: doc,
+        selection: TextSelection.collapsed(offset: 0),
+      );
     });
   }
-
 
   String formatPrice(int price) {
     return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
@@ -56,12 +56,14 @@ class _DetailProductState extends State<DetailProduct> {
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
           .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-        addedBy: product['added_by'],
-      ))
+                name: product['name'],
+                price: product['price'],
+                originalPrice: product['original_price'],
+                weight: product['weight'],
+                image: product['image'],
+                quantity: product['quantity'],
+                addedBy: product['added_by'],
+              ))
           .toList();
 
       int totalQuantity = 0;
@@ -78,8 +80,10 @@ class _DetailProductState extends State<DetailProduct> {
       final snapshot = await cartDoc.get();
 
       if (snapshot.exists) {
-        var products = List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
-        var existingProductIndex = products.indexWhere((item) => item['name'] == product['name']);
+        var products =
+            List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
+        var existingProductIndex =
+            products.indexWhere((item) => item['name'] == product['name']);
 
         if (existingProductIndex != -1) {
           products[existingProductIndex]['quantity'] += 1;
@@ -88,6 +92,7 @@ class _DetailProductState extends State<DetailProduct> {
             ...product,
             'quantity': 1,
             'added_by': product['added_by'],
+            'weight': product['weight'],
           });
         }
         await cartDoc.update({'products': products});
@@ -96,11 +101,15 @@ class _DetailProductState extends State<DetailProduct> {
         );
       } else {
         await cartDoc.set({
-          'products': [{
-            ...product,
-            'quantity': 1,
-            'added_by': product['added_by'],
-          }],
+          'products': [
+            {
+              ...product,
+              'quantity': 1,
+              'added_by': product['added_by'],
+              'weight': product['weight'],
+
+            }
+          ],
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Produk ditambahkan ke keranjang')),
@@ -108,7 +117,8 @@ class _DetailProductState extends State<DetailProduct> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Anda harus masuk untuk menambahkan ke keranjang')),
+        SnackBar(
+            content: Text('Anda harus masuk untuk menambahkan ke keranjang')),
       );
     }
   }
@@ -139,8 +149,6 @@ class _DetailProductState extends State<DetailProduct> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,7 +178,8 @@ class _DetailProductState extends State<DetailProduct> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => KeranjangPage()),
+                        MaterialPageRoute(
+                            builder: (context) => KeranjangPage()),
                       );
                     },
                     icon: Assets.icons.cart.svg(height: 24.0),
@@ -217,7 +226,8 @@ class _DetailProductState extends State<DetailProduct> {
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
-                            maxLines: null, // Allows the text to wrap to multiple lines
+                            maxLines:
+                                null, // Allows the text to wrap to multiple lines
                           ),
                         ],
                       ),
@@ -270,7 +280,8 @@ class _DetailProductState extends State<DetailProduct> {
                                 );
                               },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
                                 child: Row(
                                   children: [
                                     CircleAvatar(
@@ -282,15 +293,19 @@ class _DetailProductState extends State<DetailProduct> {
                                           ? Colors.grey[300]
                                           : Colors.transparent,
                                       child: profileImage.isEmpty
-                                          ? Icon(Icons.person, color: Colors.white)
+                                          ? Icon(Icons.person,
+                                              color: Colors.white)
                                           : null,
                                     ),
                                     SizedBox(width: 20),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          name.isNotEmpty ? name : 'Data not found',
+                                          name.isNotEmpty
+                                              ? name
+                                              : 'Data not found',
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
@@ -329,15 +344,14 @@ class _DetailProductState extends State<DetailProduct> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: quill.QuillEditor.basic(configurations: quill.QuillEditorConfigurations(
-                  controller: _controller!,
-                  showCursor: false,
-                  disableClipboard: true,
-                  readOnlyMouseCursor: SystemMouseCursors.forbidden
-              
-                  ),)
-              ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: quill.QuillEditor.basic(
+                    configurations: quill.QuillEditorConfigurations(
+                        controller: _controller!,
+                        showCursor: false,
+                        disableClipboard: true,
+                        readOnlyMouseCursor: SystemMouseCursors.forbidden),
+                  )),
               SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -345,21 +359,21 @@ class _DetailProductState extends State<DetailProduct> {
                   children: [
                     Expanded(
                       child: Button.outlined(
-                          onPressed: (){
+                          onPressed: () {
                             addToCart(widget.product);
                           },
-                          label: 'Add Cart'
-                      ),
+                          label: 'Add Cart'),
                     ),
                     SizedBox(width: 16),
                     Expanded(
                       child: Button.filled(
                         onPressed: () {
                           addToCart(widget.product);
-                          Navigator.push(context,
-                          MaterialPageRoute(builder:
-                          (context) => KeranjangPage(),
-                          ),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => KeranjangPage(),
+                            ),
                           );
                         },
                         label: 'Checkout Now',
@@ -369,7 +383,6 @@ class _DetailProductState extends State<DetailProduct> {
                 ),
               ),
               SizedBox(height: 32),
-
             ],
           ),
         ),

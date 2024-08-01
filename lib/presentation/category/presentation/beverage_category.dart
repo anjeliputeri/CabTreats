@@ -94,11 +94,13 @@ class _BeverageCategoryState extends State<BeverageCategory> {
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
           .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-        addedBy: product['added_by'],
+              name: product['name'],
+              price: product['price'],
+              originalPrice: product['original_price'],
+              weight: product['weight'],
+              image: product['image'],
+              quantity: product['quantity'],
+              addedBy: product['added_by'],
       ))
           .toList();
 

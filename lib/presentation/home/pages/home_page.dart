@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       final userDoc =
-      await FirebaseFirestore.instance.collection('users').doc(uid).get();
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       final userRole = userDoc.data()?['role'] as String?;
       setState(() {
         isSeller = userRole == 'Seller';
@@ -89,12 +89,14 @@ class _HomePageState extends State<HomePage> {
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
           .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-        addedBy: product['added_by'],
-      ))
+                name: product['name'],
+                price: product['price'],
+                originalPrice: product['original_price'],
+                weight: product['weight'],
+                image: product['image'],
+                quantity: product['quantity'],
+                addedBy: product['added_by'],
+              ))
           .toList();
 
       int totalQuantity = 0;
@@ -138,7 +140,8 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => KeranjangPage()),
+                        MaterialPageRoute(
+                            builder: (context) => KeranjangPage()),
                       );
                     },
                     icon: Assets.icons.cart.svg(height: 24.0),
@@ -179,8 +182,8 @@ class _HomePageState extends State<HomePage> {
             onSeeAllTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder:
-                    (context) => CateringCategory(),
+                MaterialPageRoute(
+                  builder: (context) => CateringCategory(),
                 ),
               );
             },
@@ -193,8 +196,8 @@ class _HomePageState extends State<HomePage> {
             onSeeAllTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder:
-                    (context) => CakeCategory(),
+                MaterialPageRoute(
+                  builder: (context) => CakeCategory(),
                 ),
               );
             },
@@ -207,8 +210,8 @@ class _HomePageState extends State<HomePage> {
             onSeeAllTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder:
-                    (context) => BeverageCategory(),
+                MaterialPageRoute(
+                  builder: (context) => BeverageCategory(),
                 ),
               );
             },
@@ -220,8 +223,8 @@ class _HomePageState extends State<HomePage> {
             onSeeAllTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder:
-                    (context) => IceCreamCategory(),
+                MaterialPageRoute(
+                  builder: (context) => IceCreamCategory(),
                 ),
               );
             },
@@ -232,15 +235,15 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: isSeller
           ? FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddProductPage()),
-          );
-        },
-        backgroundColor: Theme.of(context).primaryColor,
-        child: Icon(Icons.add, color: Colors.white),
-      )
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddProductPage()),
+                );
+              },
+              backgroundColor: Theme.of(context).primaryColor,
+              child: Icon(Icons.add, color: Colors.white),
+            )
           : null,
     );
   }

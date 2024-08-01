@@ -48,13 +48,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Future<void> _initialize() async {
     final dMethod = context.read<CheckoutBloc>().state.maybeWhen(
         orElse: () => "",
-        loaded: (_, addressId, __, ___, ____, _____, ______, delivery) {
+        loaded: (_, addressId, __, ___, ____, _____, ______, delivery, _________) {
           return delivery;
         });
     setState(() {
       deliveryMethod = dMethod;
     });
   }
+
   Stream<Map<String, String>> cartTotalStream() {
     return FirebaseFirestore.instance
         .collection('cart')
@@ -75,6 +76,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           .map((product) => CartItem(
                 name: product['name'],
                 price: product['price'],
+                originalPrice: product['original_price'],
+                weight: product['weight'],
                 image: product['image'],
                 quantity: product['quantity'],
                 addedBy: product['added_by'],
@@ -180,7 +183,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 builder: (context, state) {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (_, __, ___, ____, shippingCost, ______, _______,________) {
+                    loaded: (_, __, ___, ____, shippingCost, ______, _______,
+                        ________, _________) {
                       return shippingCost;
                     },
                   );
@@ -198,6 +202,23 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           Row(
             children: [
               const Text(
+                'Biaya Layanan',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                4000.currencyFormatRp,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              const Text(
                 'Pilihan Kurir',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
@@ -208,18 +229,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 builder: (context, state) {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (_, __, ___, ____, shippingCost, ______, _______, ________) {
+                    loaded: (_, __, ___, ____, shippingCost, ______, _______,
+                        ________, _________) {
                       return shippingCost;
                     },
                   );
                   final shippingProvider = state.maybeWhen(
                     orElse: () => '',
-                    loaded: (_, __, ___, shipperName, _____, ______, _______,________) {
+                    loaded: (_, __, ___, shipperName, _____, ______, _______,
+                        ________, _________) {
                       return shipperName;
                     },
                   );
                   return Text(
-                    shippingProvider,
+                    shippingProvider == "" ? "-": shippingProvider,
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                     ),
@@ -244,7 +267,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   final total = state.maybeWhen(
                     orElse: () => 0,
                     loaded: (products, addressId, __, ___, shippingCost, ______,
-                        total, ________) {
+                        total, ________, _________) {
                       return shippingCost + total;
                     },
                   );
@@ -263,26 +286,25 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             ],
           ),
           const SpaceHeight(20.0),
-          BlocBuilder<CheckoutBloc, CheckoutState>(
-            builder: (context, state) {
-              final shippingCost = state.maybeWhen(
+          BlocBuilder<CheckoutBloc, CheckoutState>(builder: (context, state) {
+            final shippingCost = state.maybeWhen(
               orElse: () => 0,
-              loaded: (_, ___, __, shippingService, shippingCost, _____, ______,________) {
+              loaded: (_, ___, __, shippingService, shippingCost, _____, ______,
+                  ________, _________) {
                 return shippingCost;
               },
             );
-              return Button.filled(
-                disabled: shippingCost == 0 && deliveryMethod == "Delivery",
-                onPressed: () {
-                  context.goNamed(
-                    RouteConstants.payment,
-                    pathParameters: PathParameters().toMap(),
-                  );
-                },
-                label: 'Lanjut Bayar',
-              );
-            }
-          ),
+            return Button.filled(
+              disabled: shippingCost == 0 && deliveryMethod == "Delivery",
+              onPressed: () {
+                context.goNamed(
+                  RouteConstants.payment,
+                  pathParameters: PathParameters().toMap(),
+                );
+              },
+              label: 'Lanjut Bayar',
+            );
+          }),
         ],
       ),
     );
@@ -306,15 +328,14 @@ class _SelectShippingState extends State<_SelectShipping> {
   @override
   initState() {
     super.initState();
-    _initialize();  
+    _initialize();
   }
 
-
-   Future<void> _initialize() async {
+  Future<void> _initialize() async {
     await _loadCart();
-     final addressId = context.read<CheckoutBloc>().state.maybeWhen(
+    final addressId = context.read<CheckoutBloc>().state.maybeWhen(
         orElse: () => "",
-        loaded: (_, addressId, __, ___, ____, _____, ______, ________) {
+        loaded: (_, addressId, __, ___, ____, _____, ______, ________, _________) {
           return addressId;
         });
 
@@ -322,7 +343,7 @@ class _SelectShippingState extends State<_SelectShipping> {
         .collection('address')
         .doc(addressId)
         .get();
-    
+
     if (addressSnapshot.exists) {
       var addressData = addressSnapshot.data() as Map<String, dynamic>;
       var destinationLatitude = addressData['latitude'].toString();
@@ -332,67 +353,68 @@ class _SelectShippingState extends State<_SelectShipping> {
   }
 
   Future<void> _loadCart() async {
-  print("-------load cart----------");
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) {
-    print("User is not logged in");
-    return;
-  }
-
-  print("email--------");
-  print(user.email);
-
-  setState(() {
-    _loading = true;
-  });
-
-  try {
-    print("get data cart using ${user.email}");
-    DocumentSnapshot doc = await FirebaseFirestore.instance
-        .collection('cart')
-        .doc(user.email)
-        .get();
-
-    if (!doc.exists) {
-      print("document not found");
-      setState(() {
-        _loading = false;
-      });
+    print("-------load cart----------");
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print("User is not logged in");
       return;
     }
 
-    print("document found");
+    print("email--------");
+    print(user.email);
 
-    var cartData = doc.data() as Map<String, dynamic>;
-    var products = (cartData['products'] as List).map((product) {
-      return CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-        addedBy: product['added_by'],
-      );
-    }).toList();
+    setState(() {
+      _loading = true;
+    });
 
-    print("get data from firebase");
+    try {
+      print("get data cart using ${user.email}");
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('cart')
+          .doc(user.email)
+          .get();
 
-    for (var item in products) {
-      print('Name: ${item.name}');
-      print('-------------------------');
+      if (!doc.exists) {
+        print("document not found");
+        setState(() {
+          _loading = false;
+        });
+        return;
+      }
+
+      print("document found");
+
+      var cartData = doc.data() as Map<String, dynamic>;
+      var products = (cartData['products'] as List).map((product) {
+        return CartItem(
+          name: product['name'],
+          price: product['price'],
+          originalPrice: product['original_price'],
+          weight: product['weight'],
+          image: product['image'],
+          quantity: product['quantity'],
+          addedBy: product['added_by'],
+        );
+      }).toList();
+
+      print("get data from firebase");
+
+      for (var item in products) {
+        print('Name: ${item.name}');
+        print('-------------------------');
+      }
+
+      setState(() {
+        _cartItems = products.cast<CartItem>();
+        _loading = false;
+      });
+    } catch (e) {
+      print("Error loading cart: $e");
+      setState(() {
+        _loading = false;
+      });
     }
-
-    setState(() {
-      _cartItems = products.cast<CartItem>();
-      _loading = false;
-    });
-  } catch (e) {
-    print("Error loading cart: $e");
-    setState(() {
-      _loading = false;
-    });
   }
-}
-
 
   Future<List<CourierCost>> checkCourierCost(
       CourierCostRequestModel requestModel) async {
@@ -426,7 +448,8 @@ class _SelectShippingState extends State<_SelectShipping> {
     }
   }
 
-  Future<void> _fetchCourierCosts(String destinationLatitude, String destinationLongitude) async {
+  Future<void> _fetchCourierCosts(
+      String destinationLatitude, String destinationLongitude) async {
     // await _loadCart();
 
     print("-------fetch courier----------");
@@ -437,7 +460,6 @@ class _SelectShippingState extends State<_SelectShipping> {
     String vendorEmail = orderItems[0].vendorEmail;
     print(vendorEmail);
     print("convert cart items to order item");
-    
 
     DocumentSnapshot vendorSnapshot = await FirebaseFirestore.instance
         .collection('accounts')
@@ -546,7 +568,8 @@ class _SelectShippingState extends State<_SelectShipping> {
                             onTap: () => {
                               context.read<CheckoutBloc>().add(
                                   CheckoutEvent.addShippingService(
-                                      "${item.courierName} - ${item.type}", item.price)),
+                                      "${item.courierName} - ${item.type}",
+                                      item.price)),
                               context.pop()
                             },
                             title: Text(

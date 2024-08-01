@@ -49,26 +49,42 @@ class ProductTile extends StatelessWidget {
             ),
           ),
           const SpaceWidth(14.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "${data.quantity} x ${data!.name}",
-                style: const TextStyle(
-                  fontSize: 16,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              SpaceWidth(10),
-              Text(
-                "${(data!.price! * data.quantity!).currencyFormatRp}",
-                style: const TextStyle(
-                  fontSize: 16,
-                ),
-              )
-            ],
-            ),
+          Expanded(
+            child: Container(
+              alignment: Alignment.centerLeft,
+              child: Text("${data.quantity} x ${data!.name}")),
+          ),
+          Text("${(data!.price! * data.quantity!).currencyFormatRp}")
          
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRow(String label, String value,
+      {bool isDiscount = false, bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 16,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 16,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isDiscount ? Colors.red : Colors.black,
+              decoration:
+                  isDiscount ? TextDecoration.lineThrough : TextDecoration.none,
+            ),
+          ),
         ],
       ),
     );

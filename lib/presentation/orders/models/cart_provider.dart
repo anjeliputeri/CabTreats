@@ -57,6 +57,8 @@ extension on CartItem {
       'image': image,
       'quantity': quantity,
       'added_by': addedBy,
+      'weight': weight,
+      'original_price': originalPrice
     };
   }
 }

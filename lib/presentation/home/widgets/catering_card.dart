@@ -35,11 +35,15 @@ class _CateringCardState extends State<CateringCard> {
         ...product,
         'quantity': 1,
         'added_by': product['added_by'],
+        'weight': product['weight'],
+        'original_price': product['original_price'],
       };
 
       if (snapshot.exists) {
-        var products = List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
-        var existingProductIndex = products.indexWhere((item) => item['name'] == product['name']);
+        var products =
+            List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
+        var existingProductIndex =
+            products.indexWhere((item) => item['name'] == product['name']);
 
         if (existingProductIndex != -1) {
           products[existingProductIndex]['quantity'] += 1;
@@ -60,7 +64,8 @@ class _CateringCardState extends State<CateringCard> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Anda harus masuk untuk menambahkan ke keranjang')),
+        SnackBar(
+            content: Text('Anda harus masuk untuk menambahkan ke keranjang')),
       );
     }
   }
@@ -68,7 +73,8 @@ class _CateringCardState extends State<CateringCard> {
   void fetchUserRole() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       final userRole = userDoc.data()?['role'] as String?;
       setState(() {
         isSeller = userRole == 'Seller';
@@ -85,7 +91,9 @@ class _CateringCardState extends State<CateringCard> {
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: db.collection('Catering & Snack').snapshots(), // Adjust query based on user role
+        stream: db
+            .collection('Catering & Snack')
+            .snapshots(), // Adjust query based on user role
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -133,7 +141,8 @@ class _CateringCardState extends State<CateringCard> {
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10.0)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +157,9 @@ class _CateringCardState extends State<CateringCard> {
                                     width: 125.0,
                                     height: 125.0,
                                     fit: BoxFit.cover,
-                                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                    loadingBuilder: (BuildContext context,
+                                        Widget child,
+                                        ImageChunkEvent? loadingProgress) {
                                       if (loadingProgress == null) return child;
                                       return Shimmer.fromColors(
                                         baseColor: Colors.grey.shade300,
@@ -179,7 +190,9 @@ class _CateringCardState extends State<CateringCard> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                harga != null ? formatPrice(harga) : 'Rp 10.000',
+                                harga != null
+                                    ? formatPrice(harga)
+                                    : 'Rp 10.000',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -210,7 +223,8 @@ class _CateringCardState extends State<CateringCard> {
                                       ),
                                     ],
                                   ),
-                                  child: Assets.icons.order.svg(), // Replace with your add to cart icon or button
+                                  child: Assets.icons.order
+                                      .svg(), // Replace with your add to cart icon or button
                                 ),
                               ),
                             ],

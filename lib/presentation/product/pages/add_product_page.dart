@@ -28,7 +28,8 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
-  final quill.QuillController descriptionController = quill.QuillController.basic();
+  final quill.QuillController descriptionController =
+      quill.QuillController.basic();
 
   String selectedCategory = 'Catering & Snack';
   String buttonText = 'Upload Image';
@@ -60,7 +61,10 @@ class _AddProductPageState extends State<AddProductPage> {
       return null;
     }
 
-    final ref = FirebaseStorage.instance.ref().child('products').child(DateTime.now().toString());
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('products')
+        .child(DateTime.now().toString());
     final uploadTask = ref.putFile(_imageFile!);
 
     await uploadTask.whenComplete(() => null);
@@ -131,7 +135,8 @@ class _AddProductPageState extends State<AddProductPage> {
 
     try {
       final imageUrl = await _uploadImage();
-      final String priceString = priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      final String priceString =
+          priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
       final int price = int.parse(priceString);
 
       final user = FirebaseAuth.instance.currentUser;
@@ -139,9 +144,11 @@ class _AddProductPageState extends State<AddProductPage> {
 
       final data = {
         'name': nameController.text,
-        'price': price,
+        'price': (price + price * 0.02).toInt(),
+        'original_price': price,
         'category': selectedCategory,
         'description': descriptionController.document.toDelta().toJson(),
+        'weight': int.parse(weightController.text),
         'image': imageUrl,
         'added_by': email, // Add the email to the product data
       };
@@ -207,6 +214,23 @@ class _AddProductPageState extends State<AddProductPage> {
             controller: priceController,
             label: 'Price',
           ),
+          Row(children: [
+            Icon(
+              Icons.info,
+              color: Colors.orange,
+              size: 20,
+            ),
+            const SpaceWidth(
+              3,
+            ),
+            Text(
+              'Price will be added 2% for admin fee',
+              style: TextStyle(
+                color: Colors.orange,
+                fontSize: 16,
+              ),
+            ),
+          ]),
           const SpaceHeight(24.0),
           CustomDropdown<String>(
             value: selectedCategory,
@@ -222,7 +246,8 @@ class _AddProductPageState extends State<AddProductPage> {
           CustomTextField(
             controller: weightController,
             label: 'Weight(grams)',
-            keyboardType: TextInputType.numberWithOptions(decimal: true), // Allow decimal input
+            keyboardType: TextInputType.numberWithOptions(
+                decimal: true), // Allow decimal input
           ),
           const SpaceHeight(24.0),
           ButtonImage(

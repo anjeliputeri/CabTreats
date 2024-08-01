@@ -90,7 +90,7 @@ class _AddressPageState extends State<AddressPage> {
                   builder: (context, state) {
                     final addressId = state.maybeWhen(
                       orElse: () => 0,
-                      loaded: (checkout, addressId, __, ___, ____, _____, ______,________) {
+                      loaded: (checkout, addressId, __, ___, ____, _____, ______,________, _______) {
                         return addressId;
                       },
                     );
@@ -159,7 +159,7 @@ class _AddressPageState extends State<AddressPage> {
                   builder: (context, state) {
                     final subtotal = state.maybeWhen(
                       orElse: () => 0,
-                      loaded: (checkout, _, __, ___, ____, _____, _______,________) {
+                      loaded: (checkout, _, __, ___, ____, _____, _______,________, _________) {
                         return checkout.fold<int>(
                           0,
                           (previousValue, element) =>

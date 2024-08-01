@@ -34,8 +34,10 @@ class _CateringCategoryState extends State<CateringCategory> {
       final snapshot = await cartDoc.get();
 
       if (snapshot.exists) {
-        var products = List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
-        var existingProductIndex = products.indexWhere((item) => item['name'] == product['name']);
+        var products =
+            List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
+        var existingProductIndex =
+            products.indexWhere((item) => item['name'] == product['name']);
 
         if (existingProductIndex != -1) {
           products[existingProductIndex]['quantity'] += 1;
@@ -51,10 +53,12 @@ class _CateringCategoryState extends State<CateringCategory> {
         );
       } else {
         await cartDoc.set({
-          'products': [{
-            ...product,
-            'quantity': 1,
-          }],
+          'products': [
+            {
+              ...product,
+              'quantity': 1,
+            }
+          ],
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Produk ditambahkan ke keranjang')),
@@ -62,7 +66,8 @@ class _CateringCategoryState extends State<CateringCategory> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Anda harus masuk untuk menambahkan ke keranjang')),
+        SnackBar(
+            content: Text('Anda harus masuk untuk menambahkan ke keranjang')),
       );
     }
   }
@@ -70,7 +75,8 @@ class _CateringCategoryState extends State<CateringCategory> {
   void fetchUserRole() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       final userRole = userDoc.data()?['role'] as String?;
       setState(() {
         isSeller = userRole == 'Seller';
@@ -94,12 +100,14 @@ class _CateringCategoryState extends State<CateringCategory> {
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
           .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-        addedBy: product['added_by'],
-      ))
+                name: product['name'],
+                price: product['price'],
+                originalPrice: product['original_price'],
+                weight: product['weight'],
+                image: product['image'],
+                quantity: product['quantity'],
+                addedBy: product['added_by'],
+              ))
           .toList();
 
       int totalQuantity = 0;
@@ -139,7 +147,8 @@ class _CateringCategoryState extends State<CateringCategory> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => KeranjangPage()),
+                        MaterialPageRoute(
+                            builder: (context) => KeranjangPage()),
                       );
                     },
                     icon: Assets.icons.cart.svg(height: 24.0),
@@ -154,7 +163,9 @@ class _CateringCategoryState extends State<CateringCategory> {
       body: Container(
         padding: const EdgeInsets.all(8.0),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: db.collection('Catering & Snack').snapshots(), // Adjust query based on user role
+          stream: db
+              .collection('Catering & Snack')
+              .snapshots(), // Adjust query based on user role
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -181,7 +192,8 @@ class _CateringCategoryState extends State<CateringCategory> {
               child: GridView.builder(
                 itemCount: data.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // Number of cards per row, increased to make cards smaller
+                  crossAxisCount:
+                      2, // Number of cards per row, increased to make cards smaller
                   childAspectRatio: 2 / 3, // Adjust aspect ratio as needed
                   mainAxisSpacing: 8.0, // Spacing between rows
                   crossAxisSpacing: 16.0, // Spacing between columns
@@ -204,7 +216,8 @@ class _CateringCategoryState extends State<CateringCategory> {
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10.0)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,7 +232,9 @@ class _CateringCategoryState extends State<CateringCategory> {
                                     width: double.infinity,
                                     height: 125.0,
                                     fit: BoxFit.cover,
-                                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                    loadingBuilder: (BuildContext context,
+                                        Widget child,
+                                        ImageChunkEvent? loadingProgress) {
                                       if (loadingProgress == null) return child;
                                       return Shimmer.fromColors(
                                         baseColor: Colors.grey.shade300,
@@ -250,7 +265,9 @@ class _CateringCategoryState extends State<CateringCategory> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                harga != null ? formatPrice(harga) : 'Rp 10.000',
+                                harga != null
+                                    ? formatPrice(harga)
+                                    : 'Rp 10.000',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -281,7 +298,8 @@ class _CateringCategoryState extends State<CateringCategory> {
                                       ),
                                     ],
                                   ),
-                                  child: Assets.icons.order.svg(), // Replace with your add to cart icon or button
+                                  child: Assets.icons.order
+                                      .svg(), // Replace with your add to cart icon or button
                                 ),
                               ),
                             ],

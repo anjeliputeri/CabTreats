@@ -47,30 +47,39 @@ class _AddressState extends State<Address> {
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
           .map((product) => CartItem(
-                name: product['name'],
-                price: product['price'],
-                image: product['image'],
-                quantity: product['quantity'],
-                addedBy: product['added_by'],
+              name: product['name'],
+              price: product['price'],
+              originalPrice: product['original_price'],
+              weight: product['weight'],
+              image: product['image'],
+              quantity: product['quantity'],
+              addedBy: product['added_by'],
               ))
           .toList();
 
       int total = 0;
+      int oriTotal = 0;
       for (var item in products) {
         total += item.price * item.quantity;
+        oriTotal += item.originalPrice * item.quantity;
       }
+      
 
       context.read<CheckoutBloc>().add(
             CheckoutEvent.addSubTotalPrice(
               total,
             ),
           );
+      context.read<CheckoutBloc>().add(CheckoutEvent.addOriginalSubTotalPrice(oriTotal));
 
       return {
         "totalItem": (products.length).toString(),
         "totalPrice": NumberFormat.currency(
                 locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
-            .format(total)
+            .format(total),
+         "oriTotalPrice": NumberFormat.currency(
+                locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+            .format(oriTotal),
       };
     });
   }
@@ -229,7 +238,7 @@ class _AddressState extends State<Address> {
                     builder: (context, state) {
                   final addressId = state.maybeWhen(
                     orElse: () => 0,
-                    loaded: (checkout, addressId, __, ___, ____, _____, ______,________) {
+                    loaded: (checkout, addressId, __, ___, ____, _____, ______,________, _________) {
                       print("addressId: $addressId");
                       return addressId;
                     },
@@ -316,6 +325,8 @@ class _AddressState extends State<Address> {
 
                 String totalPrice = snapshot.data!['totalPrice']!;
 
+                String oriTotalPrice = snapshot.data!['oriTotalPrice']!;
+
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -325,6 +336,9 @@ class _AddressState extends State<Address> {
                     ),
                     Text(
                       totalPrice,
+                      style: const TextStyle(fontSize: 16.0),
+                    ),
+                    Text(oriTotalPrice,
                       style: const TextStyle(fontSize: 16.0),
                     ),
                   ],
@@ -359,7 +373,7 @@ class _AddressState extends State<Address> {
                     builder: (context, state) {
                   final address = state.maybeWhen(
                     orElse: () => "",
-                    loaded: (_, addressId, __, ___, ____, _____, ______,________) {
+                    loaded: (_, addressId, __, ___, ____, _____, ______,________, _________) {
                       return addressId;
                     },
                   );

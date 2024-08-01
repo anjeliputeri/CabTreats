@@ -51,14 +51,17 @@ class _KeranjangPageState extends State<KeranjangPage> {
         };
       }
       var cartData = snapshot.data() as Map<String, dynamic>;
-      var products =(cartData['products'] as List)
-          .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-        addedBy: product['added_by'],
-      ))
+      var products = (cartData['products'] as List)
+          .map((product) =>
+          CartItem(
+              name: product['name'],
+              price: product['price'],
+              originalPrice: product['original_price'],
+              weight: product['weight'],
+              image: product['image'],
+              quantity: product['quantity'],
+              addedBy: product['added_by'],
+          ))
           .toList();
 
       int total = 0;
@@ -85,13 +88,16 @@ class _KeranjangPageState extends State<KeranjangPage> {
       }
       var cartData = snapshot.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
-          .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-        addedBy: product['added_by'],
-      ))
+          .map((product) =>
+          CartItem(
+              name: product['name'],
+              price: product['price'],
+              originalPrice: product['original_price'],
+              weight: product['weight'],
+              image: product['image'],
+              quantity: product['quantity'],
+              addedBy: product['added_by'],
+          ))
           .toList();
 
       int totalQuantity = 0;
@@ -122,13 +128,14 @@ class _KeranjangPageState extends State<KeranjangPage> {
 
       var cartData = doc.data() as Map<String, dynamic>;
       var products = (cartData['products'] as List)
-          .map((product) => CartItem(
-        name: product['name'],
-        price: product['price'],
-        image: product['image'],
-        quantity: product['quantity'],
-        addedBy: product['added_by'],
-      ))
+          .map((product) =>
+      {
+        "name": product['name'],
+        "price": product['price'],
+        "image": product['image'],
+        "quantity": product['quantity'],
+        "added_by": product['added_by'] // Capture the added_by field separately
+      })
           .toList();
 
       setState(() {
@@ -136,8 +143,11 @@ class _KeranjangPageState extends State<KeranjangPage> {
             CartItem(
               name: data['name'],
               price: data['price'],
+              originalPrice: data['original_price'],
+              weight: data['weight'],
               image: data['image'],
               quantity: data['quantity'],
+              addedBy: data['added_by'],
             )).toList();
         _loading = false;
       });
@@ -341,7 +351,9 @@ class _KeranjangPageState extends State<KeranjangPage> {
                         "price": product['price'],
                         "image": product['image'],
                         "quantity": product['quantity'],
-                        "added_by": product['added_by']
+                        "added_by": product['added_by'],
+                        "weight": product['weight'],
+                        "original_price": product['original_price'],
                         // Capture the added_by field separately
                       })
                           .toList();

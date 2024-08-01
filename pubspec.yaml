@@ -58,6 +58,7 @@ dependencies:
   flutter_osm_plugin: any
   fluttertoast: any
   open_street_map_search_and_pick: ^0.1.0
+  rxdart: ^0.28.0
 
 dev_dependencies:
   build_runner: ^2.4.8

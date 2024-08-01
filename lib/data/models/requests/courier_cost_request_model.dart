@@ -30,11 +30,12 @@ class CourierCostRequestModel {
 
 class OrderItem {
   final String? name;
-  final double? weight;
+  final int? weight;
   final int? quantity;
   final String vendorEmail;
   final int? price;
   final String? image;
+  final int? originalPrice;
 
   OrderItem({
     this.name,
@@ -42,7 +43,8 @@ class OrderItem {
     this.quantity,
     this.vendorEmail = '',
     this.price,
-    this.image
+    this.image,
+    this.originalPrice
   });
 
   Map<String, dynamic> toJson() {
@@ -52,7 +54,8 @@ class OrderItem {
       'quantity': quantity,
       'price': price,
       'vendor_email': vendorEmail,
-      'image': image
+      'image': image,
+      'original_price': originalPrice,
     };
   }
 }
