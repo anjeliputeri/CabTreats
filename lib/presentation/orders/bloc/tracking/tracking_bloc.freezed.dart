@@ -325,7 +325,7 @@ mixin _$TrackingState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(TrackingResponseModel tracking) loaded,
+    required TResult Function(BiteshipTrackingResponseModel tracking) loaded,
     required TResult Function(String message) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -333,7 +333,7 @@ mixin _$TrackingState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(TrackingResponseModel tracking)? loaded,
+    TResult? Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult? Function(String message)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -341,7 +341,7 @@ mixin _$TrackingState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(TrackingResponseModel tracking)? loaded,
+    TResult Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) =>
@@ -431,7 +431,7 @@ class _$InitialImpl implements _Initial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(TrackingResponseModel tracking) loaded,
+    required TResult Function(BiteshipTrackingResponseModel tracking) loaded,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -442,7 +442,7 @@ class _$InitialImpl implements _Initial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(TrackingResponseModel tracking)? loaded,
+    TResult? Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -453,7 +453,7 @@ class _$InitialImpl implements _Initial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(TrackingResponseModel tracking)? loaded,
+    TResult Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -545,7 +545,7 @@ class _$LoadingImpl implements _Loading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(TrackingResponseModel tracking) loaded,
+    required TResult Function(BiteshipTrackingResponseModel tracking) loaded,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -556,7 +556,7 @@ class _$LoadingImpl implements _Loading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(TrackingResponseModel tracking)? loaded,
+    TResult? Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -567,7 +567,7 @@ class _$LoadingImpl implements _Loading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(TrackingResponseModel tracking)? loaded,
+    TResult Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -625,7 +625,7 @@ abstract class _$$LoadedImplCopyWith<$Res> {
           _$LoadedImpl value, $Res Function(_$LoadedImpl) then) =
       __$$LoadedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({TrackingResponseModel tracking});
+  $Res call({BiteshipTrackingResponseModel tracking});
 }
 
 /// @nodoc
@@ -645,7 +645,7 @@ class __$$LoadedImplCopyWithImpl<$Res>
       null == tracking
           ? _value.tracking
           : tracking // ignore: cast_nullable_to_non_nullable
-              as TrackingResponseModel,
+              as BiteshipTrackingResponseModel,
     ));
   }
 }
@@ -656,7 +656,7 @@ class _$LoadedImpl implements _Loaded {
   const _$LoadedImpl(this.tracking);
 
   @override
-  final TrackingResponseModel tracking;
+  final BiteshipTrackingResponseModel tracking;
 
   @override
   String toString() {
@@ -686,7 +686,7 @@ class _$LoadedImpl implements _Loaded {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(TrackingResponseModel tracking) loaded,
+    required TResult Function(BiteshipTrackingResponseModel tracking) loaded,
     required TResult Function(String message) error,
   }) {
     return loaded(tracking);
@@ -697,7 +697,7 @@ class _$LoadedImpl implements _Loaded {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(TrackingResponseModel tracking)? loaded,
+    TResult? Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult? Function(String message)? error,
   }) {
     return loaded?.call(tracking);
@@ -708,7 +708,7 @@ class _$LoadedImpl implements _Loaded {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(TrackingResponseModel tracking)? loaded,
+    TResult Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -757,9 +757,10 @@ class _$LoadedImpl implements _Loaded {
 }
 
 abstract class _Loaded implements TrackingState {
-  const factory _Loaded(final TrackingResponseModel tracking) = _$LoadedImpl;
+  const factory _Loaded(final BiteshipTrackingResponseModel tracking) =
+      _$LoadedImpl;
 
-  TrackingResponseModel get tracking;
+  BiteshipTrackingResponseModel get tracking;
   @JsonKey(ignore: true)
   _$$LoadedImplCopyWith<_$LoadedImpl> get copyWith =>
       throw _privateConstructorUsedError;
@@ -831,7 +832,7 @@ class _$ErrorImpl implements _Error {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(TrackingResponseModel tracking) loaded,
+    required TResult Function(BiteshipTrackingResponseModel tracking) loaded,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -842,7 +843,7 @@ class _$ErrorImpl implements _Error {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(TrackingResponseModel tracking)? loaded,
+    TResult? Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -853,7 +854,7 @@ class _$ErrorImpl implements _Error {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(TrackingResponseModel tracking)? loaded,
+    TResult Function(BiteshipTrackingResponseModel tracking)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {

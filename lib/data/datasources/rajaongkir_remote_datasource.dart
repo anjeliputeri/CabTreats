@@ -85,21 +85,20 @@ class RajaongkirRemoteDatasource {
   }
 
   //tracking
-  Future<Either<String, TrackingResponseModel>> getWaybill(
+  Future<Either<String, BiteshipTrackingResponseModel>> getWaybill(
       String courier, String waybill) async {
-    final url = Uri.parse('https://pro.rajaongkir.com/api/waybill');
-    final response = await http.post(
+        print('Getting waybill');
+    final url = Uri.parse('https://api.biteship.com/v1/trackings/${waybill}/couriers/${courier}');
+    final response = await http.get(
       url,
       headers: {
-        'key': Variables.rajaOngkirKey,
-      },
-      body: {
-        'waybill': waybill,
-        'courier': courier,
+        'Authorization': Variables.isProduction == true ? Variables.biteShipKeyProd : Variables.biteShipKey,
       },
     );
+
+    print(response.body);
     if (response.statusCode == 200) {
-      return right(TrackingResponseModel.fromJson(response.body));
+      return right(BiteshipTrackingResponseModel.fromJson(response.body));
     } else {
       return left('Error');
     }

@@ -239,7 +239,6 @@ class _AddressState extends State<Address> {
                   final addressId = state.maybeWhen(
                     orElse: () => 0,
                     loaded: (checkout, addressId, __, ___, ____, _____, ______,________, _________) {
-                      print("addressId: $addressId");
                       return addressId;
                     },
                   );
@@ -336,9 +335,6 @@ class _AddressState extends State<Address> {
                     ),
                     Text(
                       totalPrice,
-                      style: const TextStyle(fontSize: 16.0),
-                    ),
-                    Text(oriTotalPrice,
                       style: const TextStyle(fontSize: 16.0),
                     ),
                   ],

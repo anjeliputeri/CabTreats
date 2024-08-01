@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_onlineshop_app/core/constants/variables.dart';
 import 'package:flutter_onlineshop_app/core/core.dart';
 import 'package:flutter_onlineshop_app/data/models/requests/courier_cost_request_model.dart';
 import 'package:flutter_onlineshop_app/data/models/responses/courier_cost_response_model.dart';
@@ -424,8 +425,7 @@ class _SelectShippingState extends State<_SelectShipping> {
       url,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization':
-            'biteship_test.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdGluZyIsInVzZXJJZCI6IjY2OThkOGQ2Y2U1MGNmMDAxMjU5OWI0MiIsImlhdCI6MTcyMTQ4NTQ5NX0.Aah5_jvzMG_6P7dNIT98IIVr0bo9vrWcDXC-9p81dKc'
+        'Authorization': Variables.biteShipKey,
       },
       body: jsonEncode(requestModel.toJson()),
     );

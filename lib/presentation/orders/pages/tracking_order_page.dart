@@ -3,9 +3,12 @@ import 'dart:ffi';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_onlineshop_app/core/components/buttons.dart';
 import 'package:flutter_onlineshop_app/core/core.dart';
+import 'package:flutter_onlineshop_app/core/router/app_router.dart';
 import 'package:flutter_onlineshop_app/data/models/requests/courier_cost_request_model.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/widgets/product_tile.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/components/spaces.dart';
 
 class TrackingOrderPage extends StatefulWidget {
@@ -209,7 +212,16 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                  _buildRow("Biaya Pengiriman", "${(order["shipping_cost"] as int).currencyFormatRp}"),
                  _buildRow("Biaya Layanan", "${4000.currencyFormatRp}"),
                  _buildRow("Total", "${(order["totalPrice"] as int).currencyFormatRp}", isTotal: true),
-                
+                 SizedBox(height: 20),
+                 Button.outlined(
+                  onPressed: () {
+                    context.pushNamed(
+                      RouteConstants.shippingDetail,
+                      pathParameters: PathParameters().toMap(),
+                      extra: "${order["waybill_id"]}_${order["courier"]["company"]}",
+                    );
+                  }, 
+                  label: 'Lacak Pengiriman')
               ],
             ),
     );

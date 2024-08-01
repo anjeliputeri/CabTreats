@@ -7,7 +7,7 @@ import '../../../core/core.dart';
 import '../models/track_record_model.dart';
 
 class TrackignVertical extends StatelessWidget {
-  final List<Manifest> trackRecords;
+  final List<History> trackRecords;
   const TrackignVertical({super.key, required this.trackRecords});
 
   @override
@@ -29,7 +29,7 @@ class TrackignVertical extends StatelessWidget {
 }
 
 class TrackingItem extends StatelessWidget {
-  final Manifest trackRecord;
+  final History trackRecord;
   final bool isCurrent;
   final bool isLast;
 
@@ -51,14 +51,14 @@ class TrackingItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                DateFormat('yyyy-MM-dd').format(trackRecord.manifestDate!),
+                DateFormat.yMd().format(trackRecord.eventDate!),
                 textAlign: TextAlign.right,
                 style: const TextStyle(
                   fontSize: 16,
                 ),
               ),
               Text(
-                trackRecord.manifestTime.toString(),
+                DateFormat.jm().format(trackRecord.eventDate!),
                 style: const TextStyle(
                   color: AppColors.grey,
                 ),
@@ -89,10 +89,10 @@ class TrackingItem extends StatelessWidget {
         Flexible(
           child: RichText(
             text: TextSpan(
-              text: '[${trackRecord.manifestCode}] ',
+              text: '[${trackRecord.status}] ',
               children: [
                 TextSpan(
-                  text: trackRecord.manifestDescription,
+                  text: trackRecord.note,
                   style: const TextStyle(
                     fontWeight: FontWeight.w400,
                   ),

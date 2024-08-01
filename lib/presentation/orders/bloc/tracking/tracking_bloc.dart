@@ -15,6 +15,9 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
   ) : super(const _Initial()) {
     on<_GetTracking>((event, emit) async {
       emit(const _Loading());
+      print("call tracking api");
+      print(event.kurir);
+      print(event.noResi);
       final response = await rajaongkirRemoteDatasource.getWaybill(
           event.kurir, event.noResi);
       response.fold(

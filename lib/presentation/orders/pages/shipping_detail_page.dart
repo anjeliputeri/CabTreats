@@ -96,9 +96,10 @@ class _ShippingDetailPageState extends State<ShippingDetailPage> {
 
   @override
   void initState() {
+    print(widget.resi);
     context
         .read<TrackingBloc>()
-        .add(TrackingEvent.getTracking(widget.resi, 'sicepat'));
+        .add(TrackingEvent.getTracking(widget.resi.split("_")[0], widget.resi.split("_")[1]));
     super.initState();
   }
 
@@ -117,6 +118,7 @@ class _ShippingDetailPageState extends State<ShippingDetailPage> {
           const SpaceHeight(36.0),
           Container(
             decoration: BoxDecoration(
+              color: AppColors.white,
               border: Border.all(color: AppColors.stroke),
               borderRadius: const BorderRadius.all(Radius.circular(10.0)),
             ),
@@ -144,7 +146,7 @@ class _ShippingDetailPageState extends State<ShippingDetailPage> {
                               ),
                               const Spacer(),
                               Text(
-                                widget.resi,
+                                widget.resi.split("_")[0],
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: AppColors.grey,
@@ -152,7 +154,7 @@ class _ShippingDetailPageState extends State<ShippingDetailPage> {
                               ),
                               const SpaceWidth(5.0),
                               InkWell(
-                                onTap: () => copyToClipboard(widget.resi),
+                                onTap: () => copyToClipboard(widget.resi.split("_")[0]),
                                 child: const Text(
                                   'SALIN',
                                   style: TextStyle(
@@ -172,7 +174,7 @@ class _ShippingDetailPageState extends State<ShippingDetailPage> {
                           padding: const EdgeInsets.all(16.0),
                           child: TrackignVertical(
                               trackRecords:
-                                  tracking.rajaongkir?.result?.manifest ?? []),
+                                  tracking.history ?? []),
                         ),
                       ],
                     );
