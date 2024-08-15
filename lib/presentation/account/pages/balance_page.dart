@@ -13,17 +13,58 @@ class BalancePage extends StatefulWidget {
 }
 
 class _BalancePageState extends State<BalancePage> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController bankController = TextEditingController();
-  final TextEditingController accountNumberController = TextEditingController();
-
+  final TextEditingController withdrawAmountController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  String balance = 'Loading...';
+  String name = '';
+  String bank = '';
+  String accountNumber = '';
+  bool withdrawAll = false;
 
   @override
   void initState() {
     super.initState();
     _loadBankAccountData();
+    _loadWalletBalance();
+  }
+
+  String formatPrice(int price) {
+    return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
+  }
+
+  Future<void> _loadWalletBalance() async {
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
+      return;
+    }
+
+    final email = user.email;
+
+    try {
+      final doc = await _firestore.collection('accounts').doc(email).get();
+
+      if (doc.exists) {
+        final data = doc.data()!;
+        final walletBalance = data['wallet'] as int;
+        setState(() {
+          balance = formatPrice(walletBalance);
+        });
+      } else {
+        setState(() {
+          balance = 'Rp 0';
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading balance: ${e.toString()}')),
+      );
+    }
   }
 
   Future<void> _loadBankAccountData() async {
@@ -36,77 +77,22 @@ class _BalancePageState extends State<BalancePage> {
       return;
     }
 
-    final email = user.email; // Use email as the document ID
+    final email = user.email;
 
     try {
       final doc = await _firestore.collection('bankAccounts').doc(email).get();
 
       if (doc.exists) {
         final data = doc.data()!;
-        nameController.text = data['name'] ?? '';
-        bankController.text = data['bank'] ?? '';
-        accountNumberController.text = data['accountNumber'] ?? '';
+        setState(() {
+          name = data['name'] ?? '';
+          bank = data['bank'] ?? '';
+          accountNumber = data['accountNumber'] ?? '';
+        });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading data: ${e.toString()}')),
-      );
-    }
-  }
-
-  Future<void> _registerBankAccount() async {
-    final user = _auth.currentUser;
-
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in')),
-      );
-      return;
-    }
-
-    final email = user.email; // Use email as the document ID
-    final name = nameController.text.trim();
-    final bank = bankController.text.trim();
-    final accountNumber = accountNumberController.text.trim();
-
-    if (name.isEmpty || bank.isEmpty || accountNumber.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
-      return;
-    }
-
-    try {
-      await _firestore.collection('bankAccounts').doc(email!).set({
-        'name': name,
-        'bank': bank,
-        'accountNumber': accountNumber,
-        'email': user.email,
-      });
-
-      // Show a success dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false, // Prevent dismissing the dialog by tapping outside
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Success'),
-            content: const Text('Bank account details saved successfully'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                  Navigator.of(context).pop(); // Navigate back to the previous page
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving data: ${e.toString()}')),
       );
     }
   }
@@ -136,61 +122,93 @@ class _BalancePageState extends State<BalancePage> {
                 ),
               ],
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Image(
-                      image: AssetImage('assets/images/coin.png'),
-                      height: 30,
-                      width: 30,
+                    Row(
+                      children: [
+                        const Image(
+                          image: AssetImage('assets/images/coin.png'),
+                          height: 30,
+                          width: 30,
+                        ),
+                        const SizedBox(width: 8.0),
+                        const Text(
+                          'Balance',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 8.0),
                     Text(
-                      'Balance',
-                      style: TextStyle(
+                      balance,
+                      style: const TextStyle(
                         fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
                       ),
                     ),
                   ],
                 ),
-                const Text(
-                  'Rp 20.000',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
+                const SpaceHeight(24.0),
+                _buildDetailRow('Nama Pemilik Rekening', name),
+                const SpaceHeight(20.0),
+                _buildDetailRow('Rekening Bank', bank),
+                const SpaceHeight(20.0),
+                _buildDetailRow('Nomor Rekening', accountNumber),
+                const SpaceHeight(30.0),
               ],
             ),
           ),
-          const SpaceHeight(24.0),
-          CustomTextField(
-            controller: nameController,
-            keyboardType: TextInputType.name,
-            label: 'Nama Pemilik Rekening',
+          const SpaceHeight(30.0),
+          SwitchListTile(
+            title: const Text('Withdraw All Balance'),
+            value: withdrawAll,
+            onChanged: (bool value) {
+              setState(() {
+                withdrawAll = value;
+                if (withdrawAll) {
+                  withdrawAmountController.text = balance.replaceAll('Rp ', '').replaceAll('.', '');
+                } else {
+                  withdrawAmountController.clear();
+                }
+              });
+            },
           ),
           const SpaceHeight(20.0),
           CustomTextField(
-            controller: bankController,
-            keyboardType: TextInputType.text,
-            label: 'Rekening Bank',
-          ),
-          const SpaceHeight(20.0),
-          CustomTextField(
-            controller: accountNumberController,
+            controller: withdrawAmountController,
             keyboardType: TextInputType.number,
-            label: 'Nomor Rekening',
+            label: 'Nominal Uang yang Diambil',// Disable input if withdrawAll is true
           ),
           const SpaceHeight(50.0),
           Button.filled(
-            onPressed: _registerBankAccount,
-            label: 'Submit',
+            onPressed: () {
+              // Implement withdrawal logic
+            },
+            label: 'Withdraw',
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16.0),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 }

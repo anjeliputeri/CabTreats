@@ -20,6 +20,8 @@ class _AccountBankPageState extends State<AccountBankPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  bool isDataLoaded = false; // Flag to check if data is loaded
+
   @override
   void initState() {
     super.initState();
@@ -36,7 +38,7 @@ class _AccountBankPageState extends State<AccountBankPage> {
       return;
     }
 
-    final email = user.email; // Use email as the document ID
+    final email = user.email;
 
     try {
       final doc = await _firestore.collection('bankAccounts').doc(email).get();
@@ -46,6 +48,7 @@ class _AccountBankPageState extends State<AccountBankPage> {
         nameController.text = data['name'] ?? '';
         bankController.text = data['bank'] ?? '';
         accountNumberController.text = data['accountNumber'] ?? '';
+        isDataLoaded = true; // Set the flag to true once data is loaded
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +67,7 @@ class _AccountBankPageState extends State<AccountBankPage> {
       return;
     }
 
-    final email = user.email; // Use email as the document ID
+    final email = user.email;
     final name = nameController.text.trim();
     final bank = bankController.text.trim();
     final accountNumber = accountNumberController.text.trim();
@@ -77,17 +80,17 @@ class _AccountBankPageState extends State<AccountBankPage> {
     }
 
     try {
-      await _firestore.collection('bankAccounts').doc(email!).set({
+      await _firestore.collection('bankAccounts').doc(email).set({
         'name': name,
         'bank': bank,
         'accountNumber': accountNumber,
         'email': user.email,
-      });
+      }, SetOptions(merge: true)); // Merge the data if the document already exists
 
       // Show a success dialog
       showDialog(
         context: context,
-        barrierDismissible: false, // Prevent dismissing the dialog by tapping outside
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Success'),
@@ -141,7 +144,7 @@ class _AccountBankPageState extends State<AccountBankPage> {
           const SpaceHeight(50.0),
           Button.filled(
             onPressed: _registerBankAccount,
-            label: 'Submit',
+            label: isDataLoaded ? 'Update' : 'Submit', // Change label if data exists
           ),
         ],
       ),

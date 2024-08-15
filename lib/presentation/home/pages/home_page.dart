@@ -3,11 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/core/router/app_router.dart';
+import 'package:flutter_onlineshop_app/presentation/chat/chat_screen.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/all_product/all_product_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/beverage_card.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/cake_card.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/catering_card.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/ice_cream_card.dart';
+import 'package:flutter_onlineshop_app/presentation/store/presentation/menu_store.dart';
+import 'package:flutter_onlineshop_app/presentation/store/presentation/store_card.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/pages/add_product_page.dart';
 import 'package:go_router/go_router.dart';
@@ -114,7 +117,13 @@ class _HomePageState extends State<HomePage> {
         title: const Text('CabTreats'),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              // Navigator.push(
+              //     context,
+              // MaterialPageRoute(builder: (context) => ChatScreen(),
+              // ),
+              // );
+            },
             icon: Assets.icons.notification.svg(height: 24.0),
           ),
           StreamBuilder<int>(
@@ -177,6 +186,19 @@ class _HomePageState extends State<HomePage> {
           const SpaceHeight(12.0),
           const MenuCategories(),
           const SpaceHeight(12.0),
+          TitleContent(
+            title: 'Store',
+            onSeeAllTap: () {
+              Navigator.push(
+                  context,
+              MaterialPageRoute(
+                  builder: (context) => StoreCard(),
+              ),
+              );
+            },
+          ),
+          const SpaceHeight(12.0),
+          const MenuStore(),
           TitleContent(
             title: 'Catering & Snack Menu',
             onSeeAllTap: () {

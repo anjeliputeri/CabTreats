@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/core/components/components.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final FirebaseFirestore db = FirebaseFirestore.instance;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
@@ -58,10 +60,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
       String uid = userCredential.user!.uid;
 
+      // Get FCM Token
+      String? fcmToken = await _firebaseMessaging.getToken();
+
+      // Save user data including FCM token
       await db.collection('users').doc(uid).set({
         'name': nameController.text,
         'email': emailController.text,
         'role': selectedRole,
+        'fcmToken': fcmToken,  // Add FCM token here
       });
 
       Navigator.of(context).pop();
@@ -91,22 +98,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _showSuccessDialog(){
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Success'),
-            content: const Text('User added successfully'),
-            actions: <Widget>[
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('OK'),
-              ),
-            ],
-          );
-        },
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: const Text('User added successfully'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -135,6 +135,37 @@ class _AddAccountState extends State<AddAccount> {
   }
 
   void _saveUser() async {
+    // Check if all required fields are filled
+    if (nameController.text.isEmpty ||
+        addressController.text.isEmpty ||
+        selectedLatitude == null ||
+        selectedLongitude == null ||
+        strProvince == null ||
+        strCity == null ||
+        posCode.text.isEmpty ||
+        phoneNumberController.text.isEmpty ||
+        _profileImage == null) {
+      // Show a warning dialog if any field is missing
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Warning'),
+            content: const Text('Please complete all required fields and select a profile image.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
     final user = _auth.currentUser;
     if (user != null) {
       final userDocRef = FirebaseFirestore.instance.collection('accounts').doc(user.email);
@@ -152,6 +183,7 @@ class _AddAccountState extends State<AddAccount> {
         'phone_number': phoneNumberController.text,
         'is_primary_address': isPrimaryAddress,
         'profile_image': await _uploadProfileImage() ?? existingData?['profile_image'],
+        'email': user.email,
       };
 
       if (userDocSnapshot.exists) {
@@ -167,6 +199,7 @@ class _AddAccountState extends State<AddAccount> {
       );
     }
   }
+
 
 
   @override

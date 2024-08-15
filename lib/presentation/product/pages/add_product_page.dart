@@ -100,6 +100,7 @@ class _AddProductPageState extends State<AddProductPage> {
                         (context) => AddAccount(),
                   ),
                 );
+                Navigator.of(context).pop(); // Close the loading dialog
                 },
             ),
           ],

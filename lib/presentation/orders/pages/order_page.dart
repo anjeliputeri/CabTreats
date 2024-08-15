@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_onlineshop_app/data/datasources/firebase_messanging_remote_datasource.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +18,7 @@ class OrderPage extends StatefulWidget {
 class _OrderPageState extends State<OrderPage> {
   final user = FirebaseAuth.instance.currentUser;
   final db = FirebaseFirestore.instance;
+  final _firebaseMessagingRemoteDatasource = FirebaseMessagingRemoteDatasource();
 
   Stream<List<Map<String, dynamic>>> _orderStream() {
     var email = user!.email;
@@ -28,16 +30,24 @@ class _OrderPageState extends State<OrderPage> {
             var data = orderSubDoc.data() as Map<String, dynamic>;
             var vendorEmail = data['vendor_email'] as String?;
             var customerEmail = data['customer_email'] as String?;
+            var status = data['status'] ?? 'Unknown';
 
-            if ((vendorEmail == email && data["status"] != "waiting verification") || customerEmail == email) {
+            if ((vendorEmail == email && status != "waiting verification") || customerEmail == email) {
+              if (status == "paid" && vendorEmail == email) {
+                _firebaseMessagingRemoteDatasource.showNotification(
+                  title: "Pesanan Diterima",
+                  body: "Pesanan dengan ID ${orderSubDoc.id} telah dibayar.",
+                );
+              }
+
               return {
                 "id": orderSubDoc.id,
                 "waybillId": data['waybill_id'] ?? 'PICKUP',
-                "status": data['status'] ?? 'Unknown',
+                "status": status,
                 "itemCount": data['totalItem'] ?? 0,
                 "price": data['totalPrice'] ?? 0.0,
-                "vendor_email": data['vendor_email'] ?? '',
-                "customer_email": data['customer_email'] ?? '',
+                "vendor_email": vendorEmail ?? '',
+                "customer_email": customerEmail ?? '',
               };
             } else {
               return null;
@@ -51,6 +61,7 @@ class _OrderPageState extends State<OrderPage> {
       });
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -118,41 +129,41 @@ class _OrderPageState extends State<OrderPage> {
                               ),
                               user!.email! == order['vendor_email']
                                   ? Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.green,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Padding(
-                                        padding: EdgeInsets.fromLTRB(8, 2, 8, 2),
-                                        child: Center(
-                                          child: Text(
-                                            "From your customer",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.lightBlue,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Padding(
-                                        padding: EdgeInsets.fromLTRB(8, 2, 8, 2),
-                                        child: Center(
-                                          child: Text(
-                                            "Your order",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.fromLTRB(8, 2, 8, 2),
+                                  child: Center(
+                                    child: Text(
+                                      "From your customer",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
                                       ),
                                     ),
+                                  ),
+                                ),
+                              )
+                                  : Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.lightBlue,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.fromLTRB(8, 2, 8, 2),
+                                  child: Center(
+                                    child: Text(
+                                      "Your order",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 20),
