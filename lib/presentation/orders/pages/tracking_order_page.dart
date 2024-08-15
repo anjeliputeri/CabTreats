@@ -29,6 +29,8 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
 
   final user = FirebaseAuth.instance.currentUser;
 
+  var orderID = "";
+
   @override
   void initState() {
     super.initState();
@@ -44,9 +46,13 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
     print(widget.orderId);
     var orderId = widget.orderId.split('-')[0];
     var email = widget.orderId.split('-')[1];
-    
+
+    setState(() {
+      orderID = orderId;
+    });
+
     final fetchedOrders = await fetchOrderItems(orderId, email);
-    
+
     setState(() {
       orders = fetchedOrders;
       _isLoading = false;
@@ -79,6 +85,26 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
     }
 
     return [];
+  }
+
+  Future<void> updateOrderStatus({
+    required String customerEmail,
+    required String orderId,
+    required String status,
+  }) async {
+    try {
+      final orderDocRef = FirebaseFirestore.instance
+          .collection('orders')
+          .doc(customerEmail)
+          .collection('user_orders')
+          .doc(orderId);
+
+      await orderDocRef.update({
+        'status': status,
+      });
+    } catch (error) {
+      print("Error updating status: $error");
+    }
   }
 
   var statusColors = {
@@ -121,14 +147,19 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: statusColors[order["status"]] ?? Colors.grey,
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                              color:
+                                  statusColors[order["status"]] ?? Colors.grey,
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(10)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Center(
                                   child: Text(
-                                order["status"]?.replaceAll("_", " ").toUpperCase() ?? "",
+                                order["status"]
+                                        ?.replaceAll("_", " ")
+                                        .toUpperCase() ??
+                                    "",
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold),
@@ -144,12 +175,14 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                           child: Container(
                             decoration: BoxDecoration(
                               color: Color.fromARGB(255, 255, 255, 255),
-                              borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+                              borderRadius: BorderRadius.vertical(
+                                  bottom: Radius.circular(10)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Center(
-                                  child: Text(statusMessages[order["status"]] ?? "")),
+                                  child: Text(
+                                      statusMessages[order["status"]] ?? "")),
                             ),
                           ),
                         ),
@@ -161,30 +194,31 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                   color: const Color.fromARGB(255, 215, 213, 213),
                   height: 20,
                 ),
-                order["delivery_method"] == 'Delivery' ? 
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    buildSection(
-                      iconColor: Colors.red,
-                      title: 'Diambil dari',
-                      placeName: "${order["origin"]["contact_name"]}",
-                      address: order["origin"]["address"],
-                    ),
-                    buildSection(
-                      iconColor: Colors.green,
-                      title: 'Diantar ke',
-                      placeName: order["destination"]["address"],
-                      address: "${order["destination"]["contact_name"]} (${order["destination"]["contact_phone"]})",
-                    ),
-                  ],
-                )
-                : buildSection(
-                      iconColor: Colors.green,
-                      title: 'Ambil pesananmu di',
-                      placeName: "${order["vendor_phone"]}",
-                      address: order["vendor_address"],
-                    ),
+                order["delivery_method"] == 'Delivery'
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          buildSection(
+                            iconColor: Colors.red,
+                            title: 'Diambil dari',
+                            placeName: "${order["origin"]["contact_name"]}",
+                            address: order["origin"]["address"],
+                          ),
+                          buildSection(
+                            iconColor: Colors.green,
+                            title: 'Diantar ke',
+                            placeName: order["destination"]["address"],
+                            address:
+                                "${order["destination"]["contact_name"]} (${order["destination"]["contact_phone"]})",
+                          ),
+                        ],
+                      )
+                    : buildSection(
+                        iconColor: Colors.green,
+                        title: 'Ambil pesananmu di',
+                        placeName: "${order["vendor_phone"]}",
+                        address: order["vendor_address"],
+                      ),
                 Divider(
                   color: const Color.fromARGB(255, 215, 213, 213),
                   height: 20,
@@ -208,20 +242,51 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                   color: const Color.fromARGB(255, 215, 213, 213),
                   height: 20,
                 ),
-                 _buildRow("Subtotal Pesanan (${order["totalItem"]} menu)", "${(order["sub_total_price"] as int).currencyFormatRp}"),
-                 _buildRow("Biaya Pengiriman", "${(order["shipping_cost"] as int).currencyFormatRp}"),
-                 _buildRow("Biaya Layanan", "${4000.currencyFormatRp}"),
-                 _buildRow("Total", "${(order["totalPrice"] as int).currencyFormatRp}", isTotal: true),
-                 SizedBox(height: 20),
-                 Button.outlined(
-                  onPressed: () {
-                    context.pushNamed(
-                      RouteConstants.shippingDetail,
-                      pathParameters: PathParameters().toMap(),
-                      extra: "${order["waybill_id"]}_${order["courier"]["company"]}",
-                    );
-                  }, 
-                  label: 'Lacak Pengiriman')
+                _buildRow("Subtotal Pesanan (${order["totalItem"]} menu)",
+                    "${(order["sub_total_price"] as int).currencyFormatRp}"),
+                _buildRow("Biaya Pengiriman",
+                    "${(order["shipping_cost"] as int).currencyFormatRp}"),
+                _buildRow("Biaya Layanan", "${4000.currencyFormatRp}"),
+                _buildRow(
+                    "Total", "${(order["totalPrice"] as int).currencyFormatRp}",
+                    isTotal: true),
+                SizedBox(height: 20),
+                Button.outlined(
+                    onPressed: () {
+                      context.pushNamed(
+                        RouteConstants.shippingDetail,
+                        pathParameters: PathParameters().toMap(),
+                        extra:
+                            "${order["waybill_id"]}_${order["courier"]["company"]}",
+                      );
+                    },
+                    label: 'Lacak Pengiriman'),
+                    SizedBox(height: 10,),
+                if (order["vendor_email"] == user!.email)
+                  order["status"] == "paid"
+                      ? Button.outlined(
+                          color: Colors.blue,
+                          onPressed: () async {
+                            await updateOrderStatus(
+                                customerEmail: order["customer_email"],
+                                orderId: orderID,
+                                status: "order processed");
+                            context.pop();
+                          },
+                          label: 'Proses pesanan')
+                      : SizedBox(),
+                order["status"] == "order processed"
+                    ? Button.outlined(
+                        color: Colors.green,
+                        onPressed: () async {
+                          await updateOrderStatus(
+                              customerEmail: order["customer_email"],
+                              orderId: orderID,
+                              status: "shipping");
+                          context.pop();
+                        },
+                        label: 'Pesanan siap dikirimkan')
+                    : SizedBox()
               ],
             ),
     );
@@ -246,7 +311,11 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
           children: [
             Row(
               children: [
-                Icon(Icons.circle, color: iconColor, size: 10,),
+                Icon(
+                  Icons.circle,
+                  color: iconColor,
+                  size: 10,
+                ),
                 SizedBox(width: 5),
                 Text(
                   title,
@@ -276,8 +345,8 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
     );
   }
 
-
-  Widget _buildRow(String label, String value, {bool isDiscount = false, bool isTotal = false}) {
+  Widget _buildRow(String label, String value,
+      {bool isDiscount = false, bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -296,7 +365,8 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
               fontSize: isTotal ? 18 : 16,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
               color: isDiscount ? Colors.red : Colors.black,
-              decoration: isDiscount ? TextDecoration.lineThrough : TextDecoration.none,
+              decoration:
+                  isDiscount ? TextDecoration.lineThrough : TextDecoration.none,
             ),
           ),
         ],

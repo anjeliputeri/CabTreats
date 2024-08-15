@@ -269,7 +269,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     orElse: () => 0,
                     loaded: (products, addressId, __, ___, shippingCost, ______,
                         total, ________, _________) {
-                      return shippingCost + total;
+                      return shippingCost + total + 4000;
                     },
                   );
                   return Column(

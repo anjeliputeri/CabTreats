@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_onlineshop_app/core/constants/variables.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/checkout/checkout_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/models/order_request.dart';
@@ -303,8 +304,7 @@ class _PaymentPageState extends State<PaymentPage> {
       url,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization':
-            'biteship_test.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdGluZyIsInVzZXJJZCI6IjY2OThkOGQ2Y2U1MGNmMDAxMjU5OWI0MiIsImlhdCI6MTcyMTQ4NTQ5NX0.Aah5_jvzMG_6P7dNIT98IIVr0bo9vrWcDXC-9p81dKc', // Replace with your actual token
+        'Authorization': Variables.isProduction ? Variables.biteShipKeyProd : Variables.biteShipKey, 
       },
       body: jsonEncode(orderRequest.toJson()),
     );
