@@ -200,6 +200,7 @@ class _BalancePageState extends State<BalancePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+
         Text(
           label,
           style: const TextStyle(fontSize: 16.0),
