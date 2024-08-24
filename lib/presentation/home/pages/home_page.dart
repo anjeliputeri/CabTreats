@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/core/router/app_router.dart';
-import 'package:flutter_onlineshop_app/presentation/chat/chat_screen.dart';
+import 'package:flutter_onlineshop_app/presentation/chat/pages/chat_screen.dart';
+import 'package:flutter_onlineshop_app/presentation/chat/pages/list_chat_screen.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/all_product/all_product_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/beverage_card.dart';
 import 'package:flutter_onlineshop_app/presentation/home/widgets/cake_card.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_onlineshop_app/presentation/store/presentation/menu_stor
 import 'package:flutter_onlineshop_app/presentation/store/presentation/store_card.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/pages/add_product_page.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -117,15 +119,26 @@ class _HomePageState extends State<HomePage> {
         title: const Text('CabTreats'),
         actions: [
           IconButton(
-            onPressed: () {
-              // Navigator.push(
-              //     context,
-              // MaterialPageRoute(builder: (context) => ChatScreen(),
-              // ),
-              // );
-            },
-            icon: Assets.icons.notification.svg(height: 24.0),
+              onPressed: (){
+                Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ChatListScreen(),
+                    ),
+                );
+              },
+      icon: Icon(Icons.mail_outline, size: 28.0,),
           ),
+          // IconButton(
+          //   onPressed: () {
+          //     // Navigator.push(
+          //     //     context,
+          //     // MaterialPageRoute(builder: (context) => ChatScreen(),
+          //     // ),
+          //     // );
+          //   },
+          //   icon: Assets.icons.notification.svg(height: 24.0),
+          // ),
           StreamBuilder<int>(
             stream: cartTotalQuantityStream(),
             builder: (context, snapshot) {

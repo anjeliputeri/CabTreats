@@ -104,68 +104,70 @@ class _BalancePageState extends State<BalancePage> {
         title: const Text('Balance'),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: [
           const SpaceHeight(24.0),
-          Container(
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10.0),
-              border: Border.all(color: Colors.grey.withOpacity(0.5), width: 1.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  spreadRadius: 2,
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Image(
-                          image: AssetImage('assets/images/coin.png'),
-                          height: 30,
-                          width: 30,
-                        ),
-                        const SizedBox(width: 8.0),
-                        const Text(
-                          'Balance',
-                          style: TextStyle(
-                            fontSize: 16.0,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(color: Colors.grey.withOpacity(0.5), width: 1.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Image(
+                            image: AssetImage('assets/images/coin.png'),
+                            height: 30,
+                            width: 30,
                           ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      balance,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
+                          const SizedBox(width: 8.0),
+                          const Text(
+                            'Balance',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                const SpaceHeight(24.0),
-                _buildDetailRow('Nama Pemilik Rekening', name),
-                const SpaceHeight(20.0),
-                _buildDetailRow('Rekening Bank', bank),
-                const SpaceHeight(20.0),
-                _buildDetailRow('Nomor Rekening', accountNumber),
-                const SpaceHeight(30.0),
-              ],
+                      Text(
+                        balance,
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SpaceHeight(24.0),
+                  _buildDetailRow('Nama Pemilik Rekening', name),
+                  const SpaceHeight(20.0),
+                  _buildDetailRow('Rekening Bank', bank),
+                  const SpaceHeight(20.0),
+                  _buildDetailRow('Nomor Rekening', accountNumber),
+                  const SpaceHeight(30.0),
+                ],
+              ),
             ),
           ),
-          const SpaceHeight(30.0),
+          const SpaceHeight(12.0),
           SwitchListTile(
-            title: const Text('Withdraw All Balance'),
+            title: const Text('Pengambilan Semua'),
             value: withdrawAll,
             onChanged: (bool value) {
               setState(() {
@@ -178,18 +180,24 @@ class _BalancePageState extends State<BalancePage> {
               });
             },
           ),
-          const SpaceHeight(20.0),
-          CustomTextField(
-            controller: withdrawAmountController,
-            keyboardType: TextInputType.number,
-            label: 'Nominal Uang yang Diambil',// Disable input if withdrawAll is true
+          const SpaceHeight(12.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: CustomTextField(
+              controller: withdrawAmountController,
+              keyboardType: TextInputType.number,
+              label: 'Nominal Pengambilan Uang',
+            ),
           ),
           const SpaceHeight(50.0),
-          Button.filled(
-            onPressed: () {
-              // Implement withdrawal logic
-            },
-            label: 'Withdraw',
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Button.filled(
+              onPressed: () {
+                // Implement withdrawal logic
+              },
+              label: 'Submit',
+            ),
           ),
         ],
       ),
@@ -200,16 +208,20 @@ class _BalancePageState extends State<BalancePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-
         Text(
           label,
           style: const TextStyle(fontSize: 16.0),
         ),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+        Expanded( // Wrap the value Text in Expanded to handle long text
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis, // Add ellipsis if text is too long
+            textAlign: TextAlign.end, // Align text to the end (right)
+          ),
         ),
       ],
     );
   }
+
 }

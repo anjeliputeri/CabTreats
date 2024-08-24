@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/category/presentation/catering_category.dart';
+import 'package:flutter_onlineshop_app/presentation/store/presentation/detail_store.dart';
 import 'package:flutter_onlineshop_app/presentation/store/presentation/store_product.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../home/bloc/category/category_bloc.dart';
@@ -64,7 +65,8 @@ class _MenuStoreState extends State<MenuStore> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => StoreProduct(email: email, name: name), // Customize as needed
+                      // builder: (context) => StoreProduct(email: email, name: name), // Customize as needed
+                      builder: (context) => DetailStore(email: email, name: name),
                     ),
                   );
                 },
