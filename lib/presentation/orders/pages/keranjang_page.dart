@@ -38,6 +38,14 @@ class _KeranjangPageState extends State<KeranjangPage> {
   }
 
   Stream<Map<String, String>> cartTotalStream() {
+
+     if (user == null) {
+      return Stream.value({
+        "totalItem": "0",
+        "totalPrice": NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ')
+            .format(0)
+      });
+    }
     return FirebaseFirestore.instance
         .collection('cart')
         .doc(user!.email)

@@ -1,5 +1,7 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/data/datasources/auth_local_datasource.dart';
+import 'package:flutter_onlineshop_app/data/datasources/firebase_messanging_remote_datasource.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,6 +46,8 @@ class _LoginPageState extends State<LoginPage> {
       final loginResult = await _login(email, password);
 
       if (loginResult == 'success') {
+        await FirebaseMessagingRemoteDatasource().initialize();
+
         context.goNamed(
           RouteConstants.root,
           pathParameters: PathParameters().toMap(),
@@ -62,6 +66,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
+
       return 'success';
     } catch (e) {
       return e.toString();
@@ -145,6 +150,7 @@ class _LoginPageState extends State<LoginPage> {
           InkWell(
             onTap: () {
               context.goNamed(RouteConstants.register);
+
             },
             child: const Text.rich(
               TextSpan(

@@ -182,16 +182,16 @@ class _RegisterPageState extends State<RegisterPage> {
             label: 'Password',
           ),
           const SpaceHeight(20.0),
-          CustomDropdown<String>(
-            value: selectedRole,
-            items: role,
-            label: 'Role',
-            onChanged: (value) {
-              setState(() {
-                selectedRole = value!;
-              });
-            },
-          ),
+          // CustomDropdown<String>(
+          //   value: selectedRole,
+          //   items: role,
+          //   label: 'Role',
+          //   onChanged: (value) {
+          //     setState(() {
+          //       selectedRole = value!;
+          //     });
+          //   },
+          // ),
           const SpaceHeight(50.0),
           Button.filled(
             onPressed: _addUser,

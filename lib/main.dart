@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/data/datasources/address_remote_datasource.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_onlineshop_app/presentation/address/bloc/province/provin
 import 'package:flutter_onlineshop_app/presentation/address/bloc/subdistrict/subdistrict_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/auth/bloc/login/login_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/auth/bloc/logout/logout_bloc.dart';
+import 'package:flutter_onlineshop_app/presentation/auth/pages/login_page.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/all_product/all_product_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/best_seller_product/best_seller_product_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/checkout/checkout_bloc.dart';
@@ -45,25 +47,27 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+
+
   @override
   Widget build(BuildContext context) {
     final appRouter = AppRouter();
     final router = appRouter.router;
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => CategoryBloc(CategoryRemoteDatasource()),
-        ),
-        BlocProvider(
-          create: (context) => AllProductBloc(ProductRemoteDatasource()),
-        ),
-        BlocProvider(
-          create: (context) => BestSellerProductBloc(ProductRemoteDatasource()),
-        ),
-        BlocProvider(
-          create: (context) =>
-              SpecialOfferProductBloc(ProductRemoteDatasource()),
-        ),
+        // BlocProvider(
+        //   create: (context) => CategoryBloc(CategoryRemoteDatasource()),
+        // ),
+        // BlocProvider(
+        //   create: (context) => AllProductBloc(ProductRemoteDatasource()),
+        // ),
+        // BlocProvider(
+        //   create: (context) => BestSellerProductBloc(ProductRemoteDatasource()),
+        // ),
+        // BlocProvider(
+        //   create: (context) =>
+        //       SpecialOfferProductBloc(ProductRemoteDatasource()),
+        // ),
         BlocProvider(
           create: (context) => CheckoutBloc(),
         ),
@@ -137,6 +141,11 @@ class MyApp extends StatelessWidget {
         routeInformationParser: router.routeInformationParser,
         routeInformationProvider: router.routeInformationProvider,
       ),
+      
     );
+  }
+
+   Future _checkLoginStatus() async {
+    return FirebaseAuth.instance.currentUser;
   }
 }

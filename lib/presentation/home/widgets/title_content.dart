@@ -26,14 +26,14 @@ class TitleContent extends StatelessWidget {
         ),
         InkWell(
           onTap: onSeeAllTap,
-          child: const Text(
+          child: title != 'Categories' ? const Text(
             'See All',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: AppColors.primary,
             ),
-          ),
+          ): SizedBox(),
         ),
       ],
     );

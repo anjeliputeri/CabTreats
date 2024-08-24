@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/keranjang_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/payment_page.dart';
@@ -40,8 +41,19 @@ part 'enums/root_tab.dart';
 part 'models/path_parameters.dart';
 
 class AppRouter {
+
+
   final router = GoRouter(
     initialLocation: RouteConstants.splashPath,
+    redirect: (context, state) {
+    final user = FirebaseAuth.instance.currentUser; 
+
+    final isLoginOrRegisterPage = state.matchedLocation == '/login' || state.matchedLocation == '/login/register';
+
+    if (user == null && !isLoginOrRegisterPage) {
+      return '/login';
+    }
+    },
     routes: [
       GoRoute(
         name: RouteConstants.splash,

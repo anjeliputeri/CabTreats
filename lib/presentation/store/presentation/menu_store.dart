@@ -19,7 +19,7 @@ class _MenuStoreState extends State<MenuStore> {
 
   @override
   void initState() {
-    context.read<CategoryBloc>().add(const CategoryEvent.getCategories());
+    // context.read<CategoryBloc>().add(const CategoryEvent.getCategories());
     _fetchUserData();
     super.initState();
   }

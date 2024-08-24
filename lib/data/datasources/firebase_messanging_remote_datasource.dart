@@ -1,12 +1,19 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_onlineshop_app/data/datasources/auth_local_datasource.dart';
 import 'package:flutter_onlineshop_app/data/datasources/auth_remote_datasource.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class FirebaseMessagingRemoteDatasource {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+
 
   Future<void> initialize() async {
     await _firebaseMessaging.requestPermission(
@@ -35,8 +42,14 @@ class FirebaseMessagingRemoteDatasource {
 
     print('Token: $fcmToken');
     //if user login update fcm token
-    if (await AuthLocalDatasource().isAuth()) {
-      AuthRemoteDatasource().updateFcmToken(fcmToken!);
+    if (_auth.currentUser != null) {
+
+      String userId = _auth.currentUser!.uid;
+      print('userID---: $userId');
+      await _firestore.collection('users').doc(userId).update({
+        'fcm_token': fcmToken,
+      });
+      print("fcm_token---: $fcmToken added to collection");
     }
 
     FirebaseMessaging.instance.getInitialMessage();

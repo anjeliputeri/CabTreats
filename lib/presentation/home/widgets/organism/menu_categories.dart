@@ -19,7 +19,7 @@ class MenuCategories extends StatefulWidget {
 class _MenuCategoriesState extends State<MenuCategories> {
   @override
   void initState() {
-    context.read<CategoryBloc>().add(const CategoryEvent.getCategories());
+    // context.read<CategoryBloc>().add(const CategoryEvent.getCategories());
     super.initState();
   }
 

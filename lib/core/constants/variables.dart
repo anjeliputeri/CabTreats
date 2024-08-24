@@ -9,6 +9,6 @@ class Variables {
 
   static const String biteShipKeyProd = 'biteship_live.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicHJvZCIsInVzZXJJZCI6IjY2OThkOGQ2Y2U1MGNmMDAxMjU5OWI0MiIsImlhdCI6MTcyMjUyNzMwOX0.36Kt4A3xOwhY9ZEK486thzu95sRIugsv_T8JhA159Mo';
 
-  static const isProduction = true;
+  static const isProduction = false;
 
 }

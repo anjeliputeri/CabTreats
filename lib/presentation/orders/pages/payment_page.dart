@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/core/constants/variables.dart';
+import 'package:flutter_onlineshop_app/data/datasources/email_remote_datasource.dart';
 import 'package:flutter_onlineshop_app/presentation/home/bloc/checkout/checkout_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/models/order_request.dart';
@@ -451,7 +452,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     .doc(email)
                     .collection('user_orders');
 
-                await userOrdersRef.add({
+                DocumentReference docRef = await userOrdersRef.add({
                   'items': products
                       .map((item) => {
                             'name': item.name,
@@ -528,6 +529,10 @@ class _PaymentPageState extends State<PaymentPage> {
                 await _firestore.collection('orders').doc(email).set({});
                 await _firestore.collection('cart').doc(email).delete();
                 print("Order successfully placed");
+                final emailDataSource = EmailRemoteDataSource();
+                await emailDataSource.sendEmailOrder(
+                    subTotalPrice, shippingCost, subTotalPrice + serviceFee + shippingCost, user.email!, vendorEmail, docRef.id);
+                
                 context.read<CheckoutBloc>().add(CheckoutEvent.submitOrder());
                 showDialog(
                   context: context,

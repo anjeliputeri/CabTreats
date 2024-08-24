@@ -66,11 +66,19 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+     Future.microtask(() {
+      if (user == null) {
+        Navigator.pushReplacementNamed(context, RouteConstants.login);
+      }
+    });
+
     searchController = TextEditingController();
     fetchUserRole();
   }
 
   Future<void> fetchUserRole() async {
+   
+
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       final userDoc =
@@ -83,6 +91,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Stream<int> cartTotalQuantityStream() {
+    if (user == null) {
+      return Stream.value(0);
+    }
+
     return FirebaseFirestore.instance
         .collection('cart')
         .doc(user!.email)
@@ -178,6 +190,7 @@ class _HomePageState extends State<HomePage> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          Text("halo"),
           SearchInput(
             controller: searchController,
             onTap: () {
@@ -203,10 +216,10 @@ class _HomePageState extends State<HomePage> {
             title: 'Store',
             onSeeAllTap: () {
               Navigator.push(
-                  context,
-              MaterialPageRoute(
+                context,
+                MaterialPageRoute(
                   builder: (context) => StoreCard(),
-              ),
+                ),
               );
             },
           ),

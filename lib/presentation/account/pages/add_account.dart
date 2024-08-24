@@ -41,6 +41,8 @@ class _AddAccountState extends State<AddAccount> {
   var strKey = 'c364bc54969f4a3b67bc4fec31e84bab';
   var strProvince;
   var strCity;
+  var provinceId;
+
 
   bool isSeller = false;
 
@@ -321,6 +323,8 @@ class _AddAccountState extends State<AddAccount> {
                 ),
                 onChanged: (value) {
                   strProvince = value?.province;
+                  provinceId = value?.provinceId;
+
                 },
                 itemAsString: (item) => "${item.province}",
                 asyncItems: (text) async {
@@ -367,7 +371,7 @@ class _AddAccountState extends State<AddAccount> {
                     itemAsString: (item) => "${item.type} ${item.cityName}",
                     asyncItems: (text) async {
                       var response = await http.get(Uri.parse(
-                          "https://api.rajaongkir.com/starter/city?key=${strKey}"));
+                          "https://api.rajaongkir.com/starter/city?province=$provinceId&key=${strKey}"));
                       List allKota = (jsonDecode(response.body)
                       as Map<String, dynamic>)['rajaongkir']['results'];
                       var dataKota = CityModel.fromJsonList(allKota);

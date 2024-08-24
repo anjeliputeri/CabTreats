@@ -11,6 +11,22 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 
+class $AssetsHtmlGen {
+  const $AssetsHtmlGen();
+
+  /// File path: assets/html/new_order_template.html
+  String get newOrderTemplate => 'assets/html/new_order_template.html';
+
+
+   Future<String> loadHtmlContent(String path, {AssetBundle? bundle}) async {
+    bundle ??= rootBundle;
+    return await bundle.loadString(path);
+  }
+
+  /// List of all assets
+  List<String> get values => [newOrderTemplate];
+}
+
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
@@ -124,6 +140,9 @@ class $AssetsImagesGen {
 
   $AssetsImagesProductsGen get products => const $AssetsImagesProductsGen();
 
+  /// File path: assets/images/user.png
+  AssetGenImage get user => const AssetGenImage('assets/images/user.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
         banner1,
@@ -134,7 +153,8 @@ class $AssetsImagesGen {
         logo,
         oops,
         payment,
-        processOrder
+        processOrder,
+        user
       ];
 }
 
@@ -243,6 +263,7 @@ class $AssetsImagesProductsGen {
 class Assets {
   Assets._();
 
+  static const $AssetsHtmlGen html = $AssetsHtmlGen();
   static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
 }
