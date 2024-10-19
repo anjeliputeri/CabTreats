@@ -31,35 +31,43 @@ class _CakeEploreState extends State<CakeExplore> {
 
   void addToCart(Map<String, dynamic> product) async {
     if (user != null) {
-      final cartDoc = db.collection('cart').doc(user!.email);
-      final snapshot = await cartDoc.get();
 
-      final productWithDetails = {
-        ...product,
-        'quantity': 1,
-        'added_by': product['added_by'],
-      };
-
-      if (snapshot.exists) {
-        var products = List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
-        var existingProductIndex = products.indexWhere((item) => item['name'] == product['name']);
-
-        if (existingProductIndex != -1) {
-          products[existingProductIndex]['quantity'] += 1;
-        } else {
-          products.add(productWithDetails);
-        }
-        await cartDoc.update({'products': products});
+       if(user!.email == product["added_by"]) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Produk ditambahkan ke keranjang')),
+          SnackBar(content: Text('Anda tidak bisa membeli produk sendiri')),
         );
       } else {
-        await cartDoc.set({
-          'products': [productWithDetails],
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Produk ditambahkan ke keranjang')),
-        );
+        final cartDoc = db.collection('cart').doc(user!.email);
+        final snapshot = await cartDoc.get();
+
+        final productWithDetails = {
+          ...product,
+          'quantity': 1,
+          'added_by': product['added_by'],
+        };
+
+        if (snapshot.exists) {
+          var products = List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
+          var existingProductIndex = products.indexWhere((item) => item['name'] == product['name']);
+
+          if (existingProductIndex != -1) {
+            products[existingProductIndex]['quantity'] += 1;
+          } else {
+            products.add(productWithDetails);
+          }
+          await cartDoc.update({'products': products});
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Produk ditambahkan ke keranjang')),
+          );
+        } else {
+          await cartDoc.set({
+            'products': [productWithDetails],
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Produk ditambahkan ke keranjang')),
+          );
+        }
+
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

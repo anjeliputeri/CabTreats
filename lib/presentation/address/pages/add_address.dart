@@ -4,33 +4,21 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_onlineshop_app/core/constants/colors.dart';
-import 'package:flutter_onlineshop_app/data/models/responses/address_response_model.dart';
-import 'package:flutter_onlineshop_app/data/models/responses/subdistrict_response_model.dart';
-import 'package:flutter_onlineshop_app/presentation/address/bloc/add_address/add_address_bloc.dart';
+import 'package:flutter_onlineshop_app/presentation/account/bloc/pick_address/pick_address_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/address/models/city_model.dart';
 import 'package:flutter_onlineshop_app/presentation/address/pages/address_state.dart';
-import 'package:flutter_onlineshop_app/presentation/home/pages/home_page.dart';
-import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:go_router/go_router.dart';
 // import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
-import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
 import '../../../core/components/buttons.dart';
-import '../../../core/components/custom_dropdown.dart';
 import '../../../core/components/custom_text_field.dart';
 import '../../../core/components/spaces.dart';
-import '../../../core/router/app_router.dart';
-import '../../../data/models/requests/address_request_model.dart';
-import '../../../data/models/responses/city_response_model.dart';
-import '../../../data/models/responses/province_response_model.dart';
-import '../bloc/address/address_bloc.dart';
-import '../bloc/city/city_bloc.dart';
-import '../bloc/province/province_bloc.dart';
-import '../bloc/subdistrict/subdistrict_bloc.dart';
 import 'package:http/http.dart' as http;
 import '../models/province_model.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_place_picker_mb/google_maps_place_picker.dart';
+// ignore: implementation_imports
+import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
+import 'package:provider/provider.dart';
 
 class AddAddress extends StatefulWidget {
   const AddAddress({super.key});
@@ -55,18 +43,38 @@ class _AddAddressState extends State<AddAddress> {
   var provinceId;
   var strCity;
 
+  bool _mapsInitialized = false;
+
+  void initRenderer() {
+    if (_mapsInitialized) return;
+
+    setState(() {
+      _mapsInitialized = true;
+    });
+  }
+
+  GoogleMapController? _mapController;
   double? selectedLatitude;
   double? selectedLongitude;
   Map<String, dynamic>? selectedAddress;
 
   void _saveAddress() async {
     final user = _auth.currentUser;
+    context.read<PickAddressBloc>().state.maybeWhen(
+          orElse: () => "",
+          loaded: (lat, lng) {
+            setState(() {
+              selectedLatitude = lat;
+              selectedLongitude = lng;
+            });
+          },
+        );
 
     if (user != null) {
       if (nameController.text.isEmpty ||
           addressController.text.isEmpty ||
           phoneNumberController.text.isEmpty ||
-          posCode.text.isEmpty) {
+          posCode.text.isEmpty || selectedLatitude == null || selectedLongitude == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please, fill in all fields')),
         );
@@ -172,31 +180,50 @@ class _AddAddressState extends State<AddAddress> {
       body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 400,
-                child: Center(
-                      child: OpenStreetMapSearchAndPick(
-                          buttonColor: AppColors.primary,
-                          buttonText: 'Set Current Location',
-                          locationPinIconColor: AppColors.primary,
-                          locationPinTextStyle: TextStyle(color: AppColors.primary),
-                          onPicked: (pickedData) {
-                            print("adresssss-----");
-                            setState(() {
-                              selectedLatitude = pickedData.latLong.latitude;
-                              selectedLongitude = pickedData.latLong.longitude;
-                              selectedAddress = pickedData.address;
-                            });
-                            print("------------------adresss-----------------------");
-                            print(pickedData.latLong.latitude);
-                            print(pickedData.latLong.longitude);
-                            print(pickedData.address);
-                          })
+              // Container(
+              //   height: 400,
+              //   child: Center(
+              //         child: OpenStreetMapSearchAndPick(
+              //             buttonColor: AppColors.primary,
+              //             buttonText: 'Set Current Location',
+              //             locationPinIconColor: AppColors.primary,
+              //             locationPinTextStyle: TextStyle(color: AppColors.primary),
+              //             onPicked: (pickedData) {
+              //               print("adresssss-----");
+              //               setState(() {
+              //                 selectedLatitude = pickedData.latLong.latitude;
+              //                 selectedLongitude = pickedData.latLong.longitude;
+              //                 selectedAddress = pickedData.address;
+              //               });
+              //               print("------------------adresss-----------------------");
+              //               print(pickedData.latLong.latitude);
+              //               print(pickedData.latLong.longitude);
+              //               print(pickedData.address);
+              //             })
 
+              //   ),
+              // ),
+              Container(
+                height: 500,
+                child: Center(
+                  child: PlacePicker(
+                    onPlacePicked: (result) {
+                      print("longitude -- ${result.geometry!.location!.lat}");
+                      print("longitude -- ${result.geometry!.location!.lng}");
+                      print("address -- ${result.formattedAddress}");
+                      context.read<PickAddressBloc>().add(
+                          PickAddressEvent.update(
+                              result.geometry!.location!.lat,
+                              result.geometry!.location!.lng));
+                    },
+                    selectInitialPosition: true,
+                    useCurrentLocation: true,
+                    apiKey: "AIzaSyBBH1Fa9kcW8ThL-Ap2O-5E_kl2m8eT6L0",
+                    initialPosition: const LatLng(-7.6978415, 110.4106371),
+                  ),
                 ),
               ),
               const SpaceHeight(24.0),
@@ -244,7 +271,7 @@ class _AddAddressState extends State<AddAddress> {
                   var response = await http.get(Uri.parse(
                       "https://api.rajaongkir.com/starter/province?key=${strKey}"));
                   List allProvinsi = (jsonDecode(response.body)
-                  as Map<String, dynamic>)['rajaongkir']['results'];
+                      as Map<String, dynamic>)['rajaongkir']['results'];
                   var dataProvinsi = ProvinceModel.fromJsonList(allProvinsi);
                   return dataProvinsi;
                 },
@@ -286,7 +313,7 @@ class _AddAddressState extends State<AddAddress> {
                       var response = await http.get(Uri.parse(
                           "https://api.rajaongkir.com/starter/city?province=$provinceId&key=${strKey}"));
                       List allKota = (jsonDecode(response.body)
-                      as Map<String, dynamic>)['rajaongkir']['results'];
+                          as Map<String, dynamic>)['rajaongkir']['results'];
                       var dataKota = CityModel.fromJsonList(allKota);
                       return dataKota;
                     },
@@ -308,9 +335,9 @@ class _AddAddressState extends State<AddAddress> {
                             phoneNumberController.text = "+62" + value;
                             phoneNumberController.selection =
                                 TextSelection.fromPosition(
-                                  TextPosition(
-                                      offset: phoneNumberController.text.length),
-                                );
+                              TextPosition(
+                                  offset: phoneNumberController.text.length),
+                            );
                           }
                         },
                       ),

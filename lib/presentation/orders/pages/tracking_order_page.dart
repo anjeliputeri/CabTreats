@@ -7,6 +7,7 @@ import 'package:flutter_onlineshop_app/core/components/buttons.dart';
 import 'package:flutter_onlineshop_app/core/core.dart';
 import 'package:flutter_onlineshop_app/core/router/app_router.dart';
 import 'package:flutter_onlineshop_app/data/models/requests/courier_cost_request_model.dart';
+import 'package:flutter_onlineshop_app/presentation/orders/pages/tracking_order_webview.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/widgets/product_tile.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/components/spaces.dart';
@@ -242,6 +243,9 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                   color: const Color.fromARGB(255, 215, 213, 213),
                   height: 20,
                 ),
+                _buildRow("Pengiriman",
+                    "${order["order_time"] == 'now' ? 'Sekarang' : order["order_time"]}",
+                    childTextEnabled: order["vendor_email"] == user!.email),
                 _buildRow("Subtotal Pesanan (${order["totalItem"]} menu)",
                     "${(order["sub_total_price"] as int).currencyFormatRp}"),
                 _buildRow("Biaya Pengiriman",
@@ -261,11 +265,29 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                       );
                     },
                     label: 'Lacak Pengiriman'),
-                    SizedBox(height: 10,),
+                SizedBox(
+                  height: 10,
+                ),
+                if(order["courier"]["link"] != null)
+                Button.filled(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TrackingOrderWebview(
+                            url:
+                                order["courier"]["link"],
+                          ),
+                        ),
+                      );
+                    },
+                    label: 'Lacak Live Tracking'),
+                SizedBox(
+                  height: 10,
+                ),
                 if (order["vendor_email"] == user!.email)
                   order["status"] == "paid"
-                      ? Button.outlined(
-                          color: Colors.blue,
+                      ? Button.filled(
                           onPressed: () async {
                             await updateOrderStatus(
                                 customerEmail: order["customer_email"],
@@ -276,14 +298,26 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
                           label: 'Proses pesanan')
                       : SizedBox(),
                 order["status"] == "order processed"
-                    ? Button.outlined(
-                        color: Colors.green,
+                    ? Button.filled(
                         onPressed: () async {
-                          await updateOrderStatus(
-                              customerEmail: order["customer_email"],
-                              orderId: orderID,
-                              status: "shipping");
+                          await showModalBottomSheet(
+                          context: context, 
+                          useSafeArea: true,
+                          backgroundColor: Colors.white,
+                          isScrollControlled: true,
+                          builder: (BuildContext context) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: MediaQuery.of(context).viewInsets.bottom,
+                              ), 
+                              child: LiveTrackingInputForm(orderId: orderID, customerEmail: order["customer_email"],),
+                            );
+                          });
                           context.pop();
+                          // await updateOrderStatus(
+                          //     customerEmail: order["customer_email"],
+                          //     orderId: orderID,
+                          //     status: "shipping");
                         },
                         label: 'Pesanan siap dikirimkan')
                     : SizedBox()
@@ -346,28 +380,145 @@ class _TrackingOrderPageState extends State<TrackingOrderPage> {
   }
 
   Widget _buildRow(String label, String value,
-      {bool isDiscount = false, bool isTotal = false}) {
+      {bool isDiscount = false,
+      bool isTotal = false,
+      bool childTextEnabled = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: isTotal ? 18 : 16,
+                  fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: isTotal ? 18 : 16,
+                  fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+                  color: isDiscount ? Colors.red : Colors.black,
+                  decoration: isDiscount
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none,
+                ),
+              ),
+            ],
+          ),
+          if (childTextEnabled == true)
+            const Text(
+                "Pesankan jasa kirim untuk antar pesanan pelanggan ke alamat tujuan",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color.fromARGB(255, 18, 17, 17),
+                )),
+        ],
+      ),
+    );
+  }
+}
+
+
+class LiveTrackingInputForm extends StatefulWidget {
+  final String orderId;
+  final String customerEmail;
+
+  const LiveTrackingInputForm({Key? key, required this.orderId, required this.customerEmail}) : super(key: key);
+
+  @override
+  _LiveTrackingInputFormState createState() => _LiveTrackingInputFormState();
+}
+
+class _LiveTrackingInputFormState extends State<LiveTrackingInputForm> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _trackingLinkController = TextEditingController();
+
+
+  Future<void> updateLinkTracking({
+    required String customerEmail,
+    required String orderId,
+  }) async {
+    try {
+      final orderDocRef = FirebaseFirestore.instance
+          .collection('orders')
+          .doc(customerEmail)
+          .collection('user_orders')
+          .doc(orderId);
+
+      await orderDocRef.update({
+        'courier': {
+          'link': _trackingLinkController.text,
+        },
+        'status': 'shipping'
+      });
+
+    } catch (error) {
+      print("Error updating status: $error");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // Agar bottom sheet menyesuaikan konten
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+            'Live Tracking Pengiriman (Gojek, Grab)',
             style: TextStyle(
-              fontSize: isTotal ? 18 : 16,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+                        color: AppColors.primary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+          ),
+            ],
+          ),
+         
+          SizedBox(height: 10),
+          Form(
+            key: _formKey,
+            child: TextFormField(
+              controller: _trackingLinkController,
+              decoration: InputDecoration(
+                labelText: 'Link Tracking',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Link tracking tidak boleh kosong';
+                }
+                if (!Uri.parse(value).isAbsolute) {
+                  return 'Masukkan link yang valid';
+                }
+                return null;
+              },
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: isTotal ? 18 : 16,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              color: isDiscount ? Colors.red : Colors.black,
-              decoration:
-                  isDiscount ? TextDecoration.lineThrough : TextDecoration.none,
-            ),
+          SizedBox(height: 20),
+          Button.filled(
+            onPressed: () async {
+              if (_formKey.currentState?.validate() ?? false) {
+                String link = _trackingLinkController.text;
+                await updateLinkTracking(
+                  customerEmail: widget.customerEmail,
+                  orderId: widget.orderId,
+                );
+                // Lakukan sesuatu dengan link, seperti navigasi ke halaman lain atau penyimpanan
+                Navigator.pop(context); // Menutup bottom sheet
+              }
+            },
+            label: 'Submit',
           ),
         ],
       ),

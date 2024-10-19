@@ -34,39 +34,47 @@ class _BeverageStoreState extends State<BeverageStore> {
 
   void addToCart(Map<String, dynamic> product) async {
     if (user != null) {
-      final cartDoc = db.collection('cart').doc(user!.email);
-      final snapshot = await cartDoc.get();
 
-      if (snapshot.exists) {
-        var products =
-        List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
-        var existingProductIndex =
-        products.indexWhere((item) => item['name'] == product['name']);
-
-        if (existingProductIndex != -1) {
-          products[existingProductIndex]['quantity'] += 1;
-        } else {
-          products.add({
-            ...product,
-            'quantity': 1,
-          });
-        }
-        await cartDoc.update({'products': products});
+       if(user!.email == product["added_by"]) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Produk ditambahkan ke keranjang')),
+          SnackBar(content: Text('Anda tidak bisa membeli produk sendiri')),
         );
       } else {
-        await cartDoc.set({
-          'products': [
-            {
+        final cartDoc = db.collection('cart').doc(user!.email);
+        final snapshot = await cartDoc.get();
+
+        if (snapshot.exists) {
+          var products =
+          List<Map<String, dynamic>>.from(snapshot.data()!['products'] ?? []);
+          var existingProductIndex =
+          products.indexWhere((item) => item['name'] == product['name']);
+
+          if (existingProductIndex != -1) {
+            products[existingProductIndex]['quantity'] += 1;
+          } else {
+            products.add({
               ...product,
               'quantity': 1,
-            }
-          ],
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Produk ditambahkan ke keranjang')),
-        );
+            });
+          }
+          await cartDoc.update({'products': products});
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Produk ditambahkan ke keranjang')),
+          );
+        } else {
+          await cartDoc.set({
+            'products': [
+              {
+                ...product,
+                'quantity': 1,
+              }
+            ],
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Produk ditambahkan ke keranjang')),
+          );
+        }
+
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

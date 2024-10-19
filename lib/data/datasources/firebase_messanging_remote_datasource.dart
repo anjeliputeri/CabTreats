@@ -71,7 +71,7 @@ class FirebaseMessagingRemoteDatasource {
       body,
       const NotificationDetails(
         android: AndroidNotificationDetails(
-            'com.example.flutter_onlineshop_app', 'app',
+            'com.crab.android', 'app',
             importance: Importance.max),
         iOS: DarwinNotificationDetails(),
       ),

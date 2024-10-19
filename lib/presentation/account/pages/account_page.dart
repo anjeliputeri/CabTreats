@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/account/pages/add_account.dart';
 import 'package:flutter_onlineshop_app/presentation/account/pages/balance_page.dart';
+import 'package:flutter_onlineshop_app/presentation/account/pages/become_seller.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/order_page.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/pages/payment_page.dart';
 import 'package:flutter_onlineshop_app/presentation/product/pages/product_page.dart';
@@ -118,6 +119,29 @@ class _AccountPageState extends State<AccountPage> {
               );
             },
           ),
+          if (!isSeller) 
+            ListTile(
+              leading: Icon(
+                Icons.storefront_sharp,
+                color: AppColors.primary,
+              ),
+              title: const Text(
+                'Become Seller',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BecomeSeller(),
+                  ),
+                );
+              },
+            ),
+          
           if (isSeller)
             ListTile(
               leading: Icon(

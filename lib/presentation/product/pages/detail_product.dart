@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_onlineshop_app/core/assets/assets.gen.dart';
 import 'package:flutter_onlineshop_app/core/components/buttons.dart';
 import 'package:flutter_onlineshop_app/core/constants/colors.dart';
+import 'package:flutter_onlineshop_app/presentation/chat/pages/chat_screen.dart';
 import 'package:flutter_onlineshop_app/presentation/orders/models/cart_item.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter_onlineshop_app/presentation/product/pages/product_page.dart';
@@ -26,6 +27,7 @@ class _DetailProductState extends State<DetailProduct> {
   final db = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser;
   quill.QuillController? _controller;
+  var sellerName = "";
 
   @override
   void initState() {
@@ -139,6 +141,9 @@ class _DetailProductState extends State<DetailProduct> {
         };
       }
       var accountData = snapshot.data() as Map<String, dynamic>;
+      setState(() {
+        sellerName = accountData['name'] ?? 'Data not found';
+      });
       return {
         'profile_image': accountData['profile_image'] ?? '',
         'name': accountData['name'] ?? 'Data not found',
@@ -357,6 +362,26 @@ class _DetailProductState extends State<DetailProduct> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          border: Border.all(color: AppColors.primary),
+                        ),
+                        child: IconButton(
+                          color: Colors.white,
+                          onPressed: () {
+                             Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChatScreen(email: widget.product['added_by'], name: sellerName),
+                                ),
+                              );
+                          }, icon: Icon(Icons.chat_bubble)),
+                      ),
+                    ),
                     Expanded(
                       child: Button.outlined(
                           onPressed: () {
@@ -364,7 +389,7 @@ class _DetailProductState extends State<DetailProduct> {
                           },
                           label: 'Add Cart'),
                     ),
-                    SizedBox(width: 16),
+                    SizedBox(width: 8),
                     Expanded(
                       child: Button.filled(
                         onPressed: () {

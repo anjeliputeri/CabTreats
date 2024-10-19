@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,6 +40,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   final user = FirebaseAuth.instance.currentUser;
   var subtotal = 0;
   var deliveryMethod = "";
+  var _orderTime = "now";
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
 
   @override
   void initState() {
@@ -47,9 +51,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   }
 
   Future<void> _initialize() async {
+     context.read<CheckoutBloc>()
+          .add(const CheckoutEvent.addOrderTime('now'));
     final dMethod = context.read<CheckoutBloc>().state.maybeWhen(
         orElse: () => "",
-        loaded: (_, addressId, __, ___, ____, _____, ______, delivery, _________) {
+        loaded: (_, addressId, __, ___, ____, _____, ______, delivery, _________, __________) {
           return delivery;
         });
     setState(() {
@@ -123,6 +129,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           const SpaceHeight(36.0),
           deliveryMethod == 'Delivery' ? _SelectShipping() : Container(),
           // const _ShippingSelected(),
+          SizedBox(height: 16),
+          Column(
+          children: [
+
+            _buildOptionCard('Order Sekarang', 'now'),
+            SizedBox(height: 16),
+            _buildOptionCard('Order Nanti', 'later'),
+          ],
+        ),
+          
           const SpaceHeight(36.0),
           const Divider(),
           const SpaceHeight(8.0),
@@ -134,6 +150,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             ),
           ),
           const SpaceHeight(12.0),
+          Row(
+            children: [
+              const Text(
+                'Waktu Order',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+               Text(
+                _orderTime == 'now' ? 'Sekarang': "${_formatDate(_selectedDate!)} - ${_formatTime(_selectedTime!)}",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
           Row(
             children: [
               const Text(
@@ -185,7 +219,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
                     loaded: (_, __, ___, ____, shippingCost, ______, _______,
-                        ________, _________) {
+                        ________, _________, __________) {
                       return shippingCost;
                     },
                   );
@@ -231,14 +265,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   final shippingCost = state.maybeWhen(
                     orElse: () => 0,
                     loaded: (_, __, ___, ____, shippingCost, ______, _______,
-                        ________, _________) {
+                        ________, _________, __________) {
                       return shippingCost;
                     },
                   );
                   final shippingProvider = state.maybeWhen(
                     orElse: () => '',
                     loaded: (_, __, ___, shipperName, _____, ______, _______,
-                        ________, _________) {
+                        ________, _________, __________) {
                       return shipperName;
                     },
                   );
@@ -268,7 +302,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   final total = state.maybeWhen(
                     orElse: () => 0,
                     loaded: (products, addressId, __, ___, shippingCost, ______,
-                        total, ________, _________) {
+                        total, ________, _________, __________) {
                       return shippingCost + total + 4000;
                     },
                   );
@@ -291,7 +325,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             final shippingCost = state.maybeWhen(
               orElse: () => 0,
               loaded: (_, ___, __, shippingService, shippingCost, _____, ______,
-                  ________, _________) {
+                  ________, _________, __________) {
                 return shippingCost;
               },
             );
@@ -309,6 +343,105 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ],
       ),
     );
+  }
+
+
+  Widget _buildOptionCard(String title, String value) {
+    return GestureDetector(
+      onTap: () {
+        if (value == 'later') {
+          _showDateTimePicker(context);
+        } else {
+          context.read<CheckoutBloc>()
+          .add(const CheckoutEvent.addOrderTime('now'));
+          setState(() {
+            _orderTime = value;
+          });
+        }
+      },
+      child: Card(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(
+            color: _orderTime == value ? AppColors.primary : Colors.grey,
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: TextStyle(fontSize: 18)),
+              Radio<String>(
+                value: value,
+                groupValue: _orderTime,
+                onChanged: (String? newValue) {
+                  if (newValue == 'later') {
+                    _showDateTimePicker(context);
+                  } else {
+                    setState(() {
+                      _orderTime = newValue!;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+   Future<void> _showDateTimePicker(BuildContext context) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+
+    if (pickedDate != null) {
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (pickedTime != null) {
+        context.read<CheckoutBloc>()
+          .add(CheckoutEvent.addOrderTime("${_formatDate(pickedDate)} - ${_formatTime(pickedTime)}"));
+        setState(() {
+          _selectedDate = pickedDate;
+          _selectedTime = pickedTime;
+          _orderTime = 'later'; 
+        });
+      } else {
+        _resetSelection();
+      }
+    } else {
+      _resetSelection();
+    }
+  }
+
+  void _resetSelection() {
+    context.read<CheckoutBloc>()
+          .add(const CheckoutEvent.addOrderTime('now'));
+    setState(() {
+      _orderTime = 'now'; // Revert to 'now' if date or time is not selected
+      _selectedDate = null;
+      _selectedTime = null;
+    });
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(date); 
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return DateFormat('HH:mm').format(dt); 
   }
 }
 
@@ -336,7 +469,7 @@ class _SelectShippingState extends State<_SelectShipping> {
     await _loadCart();
     final addressId = context.read<CheckoutBloc>().state.maybeWhen(
         orElse: () => "",
-        loaded: (_, addressId, __, ___, ____, _____, ______, ________, _________) {
+        loaded: (_, addressId, __, ___, ____, _____, ______, ________, _________, __________) {
           return addressId;
         });
 

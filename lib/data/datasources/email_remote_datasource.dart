@@ -10,6 +10,7 @@ class EmailRemoteDataSource {
 
     const htmlGen = $AssetsHtmlGen();
     var content = await htmlGen.loadHtmlContent(htmlGen.newOrderTemplate);
+    print("email : $vendorEmail , $customerEmail");
 
     content = content.replaceAll('{{orderID}}', orderID);
     content = content.replaceAll('{{vendorEmail}}', vendorEmail);

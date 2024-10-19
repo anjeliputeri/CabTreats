@@ -9,7 +9,7 @@ part 'checkout_state.dart';
 part 'checkout_bloc.freezed.dart';
 
 class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
-  CheckoutBloc() : super(const _Loaded([], '', '', '', 0, '', 0, '', 0)) {
+  CheckoutBloc() : super(const _Loaded([], '', '', '', 0, '', 0, '', 0, '')) {
     on<_AddItem>((event, emit) {
       final currentState = state as _Loaded;
       if (currentState.products
@@ -29,7 +29,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
             currentState.shippingService,
             currentState.subTotalPrice,
             currentState.deliveryMethod,
-            currentState.oriSubTotalPrice));
+            currentState.oriSubTotalPrice,
+            currentState.orderTime));
       } else {
         final newItem = ProductQuantity(product: event.product, quantity: 1);
         final newItems = [...currentState.products, newItem];
@@ -42,7 +43,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
             currentState.shippingService,
             currentState.subTotalPrice,
             currentState.deliveryMethod,
-            currentState.oriSubTotalPrice));
+            currentState.oriSubTotalPrice,
+            currentState.orderTime));
       }
     });
 
@@ -67,7 +69,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
               currentState.shippingService,
               currentState.subTotalPrice,
               currentState.deliveryMethod,
-              currentState.oriSubTotalPrice));
+              currentState.oriSubTotalPrice,
+              currentState.orderTime));
         } else {
           final newItem = item.copyWith(quantity: item.quantity - 1);
           final newItems = currentState.products
@@ -82,7 +85,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
               currentState.shippingService,
               currentState.subTotalPrice,
               currentState.deliveryMethod,
-              currentState.oriSubTotalPrice));
+              currentState.oriSubTotalPrice,
+              currentState.orderTime));
         }
       }
     });
@@ -98,7 +102,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           currentState.shippingService,
           currentState.subTotalPrice,
           currentState.deliveryMethod,
-          currentState.oriSubTotalPrice));
+          currentState.oriSubTotalPrice,
+          currentState.orderTime));
     });
 
     on<_AddPaymentMethod>((event, emit) {
@@ -112,7 +117,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           event.paymentMethod,
           currentState.subTotalPrice,
           currentState.deliveryMethod,
-          currentState.oriSubTotalPrice));
+          currentState.oriSubTotalPrice,
+          currentState.orderTime));
     });
 
     on<_AddShippingService>((event, emit) {
@@ -126,7 +132,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           currentState.paymentMethod,
           currentState.subTotalPrice,
           currentState.deliveryMethod,
-          currentState.oriSubTotalPrice));
+          currentState.oriSubTotalPrice,
+          currentState.orderTime));
     });
 
      on<_AddSubTotalPrice>((event, emit) {
@@ -140,7 +147,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           currentState.paymentMethod,
           event.subtotal,
           currentState.deliveryMethod,
-          currentState.oriSubTotalPrice));
+          currentState.oriSubTotalPrice, 
+          currentState.orderTime));
     });
 
     on<_AddDeliveryMethod>((event, emit) {
@@ -154,8 +162,11 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           currentState.paymentMethod,
           currentState.subTotalPrice,
           event.deliveryMethod,
-          currentState.oriSubTotalPrice));
+          currentState.oriSubTotalPrice,
+          currentState.orderTime));
     });
+
+   
 
 
     on<_SubmitOrder>((event, emit) {
@@ -169,7 +180,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           "",
           0,
           "",
-          0));
+          0,
+          ""));
     });
 
 
@@ -184,14 +196,31 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           currentState.paymentMethod,
           currentState.subTotalPrice,
           currentState.deliveryMethod,
-          event.subtotal));
+          event.subtotal,
+          currentState.orderTime));
+    });
+
+
+    on<_AddOrderTime>((event, emit) {
+      final currentState = state as _Loaded;
+      emit(_Loaded(
+          currentState.products,
+          currentState.addressId,
+          currentState.paymentMethod,
+          currentState.shippingService,
+          currentState.shippingCost,
+          currentState.paymentMethod,
+          currentState.subTotalPrice,
+          currentState.deliveryMethod,
+          currentState.oriSubTotalPrice,
+          event.orderTime));
     });
 
 
 
     //on started
     on<_Started>((event, emit) {
-      emit(const _Loaded([], '', '', '', 0, '', 0, '', 0));
+      emit(const _Loaded([], '', '', '', 0, '', 0, '', 0, ''));
     });
   }
 }

@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1043509045227',
     projectId: 'cabtreats-100a4',
     storageBucket: 'cabtreats-100a4.appspot.com',
-    iosBundleId: 'com.example.flutterOnlineshopApp',
+    iosBundleId: 'com.crab.android',
   );
 
 }

@@ -17,8 +17,7 @@ class $AssetsHtmlGen {
   /// File path: assets/html/new_order_template.html
   String get newOrderTemplate => 'assets/html/new_order_template.html';
 
-
-   Future<String> loadHtmlContent(String path, {AssetBundle? bundle}) async {
+  Future<String> loadHtmlContent(String path, {AssetBundle? bundle}) async {
     bundle ??= rootBundle;
     return await bundle.loadString(path);
   }
@@ -128,6 +127,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/logo.png
   AssetGenImage get logo => const AssetGenImage('assets/images/logo.png');
 
+  /// File path: assets/images/mail.png
+  AssetGenImage get mail => const AssetGenImage('assets/images/mail.png');
+
   /// File path: assets/images/oops.png
   AssetGenImage get oops => const AssetGenImage('assets/images/oops.png');
 
@@ -151,6 +153,7 @@ class $AssetsImagesGen {
         coin,
         google,
         logo,
+        mail,
         oops,
         payment,
         processOrder,

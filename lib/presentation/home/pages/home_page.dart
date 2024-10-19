@@ -190,7 +190,6 @@ class _HomePageState extends State<HomePage> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          Text("halo"),
           SearchInput(
             controller: searchController,
             onTap: () {

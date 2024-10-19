@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_onlineshop_app/data/datasources/category_remote_datasour
 import 'package:flutter_onlineshop_app/data/datasources/order_remote_datasource.dart';
 import 'package:flutter_onlineshop_app/data/datasources/product_remote_datasource.dart';
 import 'package:flutter_onlineshop_app/data/datasources/rajaongkir_remote_datasource.dart';
+import 'package:flutter_onlineshop_app/presentation/account/bloc/pick_address/pick_address_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/address/bloc/add_address/add_address_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/address/bloc/address/address_bloc.dart';
 import 'package:flutter_onlineshop_app/presentation/address/bloc/city/city_bloc.dart';
@@ -30,9 +33,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'core/constants/colors.dart';
 import 'core/router/app_router.dart';
 import 'data/datasources/firebase_messanging_remote_datasource.dart';
-import 'presentation/home/bloc/category/category_bloc.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -41,7 +44,10 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await FirebaseMessagingRemoteDatasource().initialize();
-  runApp(const MyApp());
+  await initializeDateFormatting('id_ID', null).then((_) => 
+   runApp(const MyApp())
+  );
+  // runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -109,6 +115,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => OrderDetailBloc(OrderRemoteDatasource()),
+        ),
+         BlocProvider(
+          create: (context) => PickAddressBloc(),
         ),
       ],
       child: MaterialApp.router(
