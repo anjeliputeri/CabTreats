@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:flutter_onlineshop_app/presentation/product/pages/detail_product.dart';
+import 'detail_store.dart';
 
 class StoreCard extends StatefulWidget {
   const StoreCard({Key? key}) : super(key: key);
@@ -43,70 +43,95 @@ class _StoreCardState extends State<StoreCard> {
       body: _userProfiles.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(8.0), // Adjust padding for tighter fit
+        padding: const EdgeInsets.all(16.0), // Add some padding around the grid
         child: GridView.builder(
           itemCount: _userProfiles.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // Number of cards per row
-            childAspectRatio: 2 / 3, // Adjusted aspect ratio for a more compact card
-            mainAxisSpacing: 8.0, // Spacing between rows
-            crossAxisSpacing: 8.0, // Spacing between columns
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 2 / 3,
+            mainAxisSpacing: 8.0,
+            crossAxisSpacing: 16.0,
           ),
           itemBuilder: (context, index) {
             var user = _userProfiles[index];
-            var name = user['name'];
-            var imageUrl = user['profile_image'];
+            var name = user['name'] ?? 'No Name';
+            var imageUrl = user['profile_image'] ?? 'assets/images/user.png';
+            var province = user['province'] ?? 'No Province';
+            var city = user['city'] ?? 'No City';
+            var address = user['address'] ?? 'No Address';
+            var email = user['email'] ?? '';
 
             return GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => DetailProduct(product: user),
+                    builder: (context) => DetailStore(email: email, name: name),
                   ),
                 );
               },
               child: Container(
-                padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0), // Reduced border radius
+                  borderRadius: BorderRadius.circular(10.0),
                 ),
+                padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5.0),
-                        child: Stack(
-                          children: [
-                            Image.network(
-                              imageUrl ?? 'assets/images/user.png', // Default image if URL is null
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(5.0),
+                      child: Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        height: 125.0,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey.shade300,
+                            highlightColor: Colors.grey.shade100,
+                            child: Container(
                               width: double.infinity,
-                              height: 125.0, // Further reduced height for the image
-                              fit: BoxFit.cover,
-                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Shimmer.fromColors(
-                                  baseColor: Colors.grey.shade300,
-                                  highlightColor: Colors.grey.shade100,
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 125.0, // Further reduced height for the placeholder
-                                    color: Colors.white,
-                                  ),
-                                );
-                              },
+                              height: 125.0,
+                              color: Colors.white,
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
                     ),
-                    const SizedBox(height: 8.0), // Reduced spacing
+                    const SizedBox(height: 14.0),
                     Text(
-                      name ?? 'No Name',
+                      name,
                       style: const TextStyle(
-                        fontSize: 12, // Smaller font size
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    Text(
+                      province,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    Text(
+                      city,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    Text(
+                      address,
+                      style: const TextStyle(
+                        fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
                       overflow: TextOverflow.ellipsis,

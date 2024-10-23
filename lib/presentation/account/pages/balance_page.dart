@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_onlineshop_app/presentation/account/pages/add_account.dart';
+import 'package:flutter_onlineshop_app/presentation/account/pages/bank_page.dart';
 import '../../../core/components/buttons.dart';
 import '../../../core/components/custom_text_field.dart';
 import '../../../core/components/spaces.dart';
+import '../../../core/core.dart';
 
 class BalancePage extends StatefulWidget {
   const BalancePage({super.key});
@@ -22,6 +25,8 @@ class _BalancePageState extends State<BalancePage> {
   String bank = '';
   String accountNumber = '';
   bool withdrawAll = false;
+  bool _loading = true;
+  bool _isButtonDisabled = true;
 
   @override
   void initState() {
@@ -35,12 +40,19 @@ class _BalancePageState extends State<BalancePage> {
   }
 
   Future<void> _loadWalletBalance() async {
+    setState(() {
+      _loading = true;
+    });
+
     final user = _auth.currentUser;
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User not logged in')),
       );
+      setState(() {
+        _loading = false;
+      });
       return;
     }
 
@@ -51,16 +63,25 @@ class _BalancePageState extends State<BalancePage> {
 
       if (doc.exists) {
         final data = doc.data()!;
-        final walletBalance = data['wallet'] as int;
+        final walletBalance = data['wallet'] as int?;
+
         setState(() {
-          balance = formatPrice(walletBalance);
+          _loading = false;
+          balance = walletBalance != null ? formatPrice(walletBalance) : 'Rp 0';
+          _isButtonDisabled = walletBalance == null || walletBalance <= 0;
         });
       } else {
         setState(() {
+          _showAccountDataIncompleteDialog();
+          _loading = false;
           balance = 'Rp 0';
+          _isButtonDisabled = true;
         });
       }
     } catch (e) {
+      setState(() {
+        _loading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading balance: ${e.toString()}')),
       );
@@ -97,13 +118,98 @@ class _BalancePageState extends State<BalancePage> {
     }
   }
 
+  void _showAccountDataIncompleteDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Acoount Incomplete'),
+            content: Text('You need to complete your account data to proceed!'),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: (){
+                    Navigator.of(context).pop();
+                    _navigateToAccountDataPage();
+                  },
+                  child: Text('OK'),
+              ),
+            ],
+          );
+        },
+    );
+  }
+
+  void _showAccountBankIncompleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Bank Data Incomplete'),
+          content: Text('You need to complete your bank data.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _navigateToBankDataPage();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _navigateToAccountDataPage() {
+    Navigator.push(
+        context,
+    MaterialPageRoute(builder: (context) => AddAccount()),
+    );
+  }
+
+  void _navigateToBankDataPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AccountBankPage()), // Ganti sesuai dengan rute yang sesuai
+    );
+  }
+
+  Future<void> _updateWalletBalance(int newBalance) async {
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
+      return;
+    }
+
+    final email = user.email;
+
+    try {
+      await _firestore.collection('accounts').doc(email).update({'wallet': newBalance});
+      // Reload the wallet balance after the update
+      await _loadWalletBalance();
+      // Optionally, show a success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Withdrawal successful!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating balance: ${e.toString()}')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Balance'),
       ),
-      body: ListView(
+      body: _loading
+        ? Center(child: CircularProgressIndicator())
+      : ListView(
         children: [
           const SpaceHeight(24.0),
           Padding(
@@ -177,6 +283,11 @@ class _BalancePageState extends State<BalancePage> {
                 } else {
                   withdrawAmountController.clear();
                 }
+
+                // Re-evaluate button state based on the text field's value
+                int withdrawAmount = int.tryParse(withdrawAmountController.text) ?? 0;
+                int actualBalance = int.tryParse(balance.replaceAll('Rp ', '').replaceAll('.', '')) ?? 0;
+                _isButtonDisabled = withdrawAmount <= 0 || actualBalance <= 0 || name.isEmpty || bank.isEmpty || accountNumber.isEmpty;
               });
             },
           ),
@@ -187,18 +298,104 @@ class _BalancePageState extends State<BalancePage> {
               controller: withdrawAmountController,
               keyboardType: TextInputType.number,
               label: 'Nominal Pengambilan Uang',
+              onChanged: (value) {
+                setState(() {
+                  int actualBalance = int.tryParse(balance.replaceAll('Rp ', '').replaceAll('.', '')) ?? 0;
+                  int withdrawAmount = int.tryParse(value) ?? 0;
+
+                  _isButtonDisabled = value.isEmpty || withdrawAmount <= 0 || withdrawAmount == 0 || actualBalance <= 0 || name.isEmpty || bank.isEmpty || accountNumber.isEmpty;
+                });
+              },
             ),
           ),
+
           const SpaceHeight(50.0),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Button.filled(
-              onPressed: () {
-                // Implement withdrawal logic
-              },
-              label: 'Submit',
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+              onPressed: _isButtonDisabled ? null : () async {
+                if (name.isEmpty || bank.isEmpty || accountNumber.isEmpty) {
+                  _showAccountBankIncompleteDialog();
+                  } else if (withdrawAmountController == 0){
+                  _isButtonDisabled = true;
+                } else if (withdrawAmountController.text.isEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Warning'),
+                        content: const Text('Please enter an amount to withdraw!'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  int withdrawAmount = int.tryParse(withdrawAmountController.text.replaceAll('.', '').replaceAll('Rp ', '')) ?? 0;
+                  int actualBalance = int.tryParse(balance.replaceAll('.', '').replaceAll('Rp ', '')) ?? 0;
+
+                  if (withdrawAmount > actualBalance) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Insufficient Balance'),
+                          content: const Text('You do not have enough balance to withdraw this amount.'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    return;
+                  }
+
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Withdrawal Request'),
+                        content: const Text('Please wait, it may take up to 7 days for the money to be transferred to your account.'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              await _updateWalletBalance(actualBalance - withdrawAmount);
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              }, child: Text('Submit',
+            style: TextStyle(
+                color: Colors.white
+            ),
+            ),
             ),
           ),
+
         ],
       ),
     );
@@ -212,12 +409,12 @@ class _BalancePageState extends State<BalancePage> {
           label,
           style: const TextStyle(fontSize: 16.0),
         ),
-        Expanded( // Wrap the value Text in Expanded to handle long text
+        Expanded(
           child: Text(
             value,
             style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-            overflow: TextOverflow.ellipsis, // Add ellipsis if text is too long
-            textAlign: TextAlign.end, // Align text to the end (right)
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
           ),
         ),
       ],

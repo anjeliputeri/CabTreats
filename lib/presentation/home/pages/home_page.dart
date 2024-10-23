@@ -141,16 +141,6 @@ class _HomePageState extends State<HomePage> {
               },
       icon: Icon(Icons.mail_outline, size: 28.0,),
           ),
-          // IconButton(
-          //   onPressed: () {
-          //     // Navigator.push(
-          //     //     context,
-          //     // MaterialPageRoute(builder: (context) => ChatScreen(),
-          //     // ),
-          //     // );
-          //   },
-          //   icon: Assets.icons.notification.svg(height: 24.0),
-          // ),
           StreamBuilder<int>(
             stream: cartTotalQuantityStream(),
             builder: (context, snapshot) {

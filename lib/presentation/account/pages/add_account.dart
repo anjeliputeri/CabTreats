@@ -53,6 +53,7 @@ class _AddAccountState extends State<AddAccount> {
   var strProvince;
   var strCity;
   var provinceId;
+  var wallet;
 
   PickResult? selectedPlace;
 
@@ -89,7 +90,6 @@ class _AddAccountState extends State<AddAccount> {
           selectedLatitude = data['latitude'];
           selectedLongitude = data['longitude'];
         });
-        // Update PickAddressBloc with the fetched coordinates
         context.read<PickAddressBloc>().add(
               PickAddressEvent.update(selectedLatitude, selectedLongitude),
             );
@@ -147,7 +147,7 @@ class _AddAccountState extends State<AddAccount> {
           .doc(user.email)
           .snapshots();
     }
-    return Stream.empty(); // Return empty stream if user is null
+    return Stream.empty();
   }
 
   Future<void> _pickImage() async {
@@ -205,7 +205,6 @@ class _AddAccountState extends State<AddAccount> {
           },
         );
 
-    // Check if all required fields are filled
     if (nameController.text.isEmpty ||
         addressController.text.isEmpty ||
         selectedLatitude == null ||
@@ -214,7 +213,6 @@ class _AddAccountState extends State<AddAccount> {
         strCity == null ||
         posCode.text.isEmpty ||
         phoneNumberController.text.isEmpty) {
-      // Show a warning dialog if any field is missing
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -253,6 +251,7 @@ class _AddAccountState extends State<AddAccount> {
         'postal_code': posCode.text,
         'phone_number': phoneNumberController.text,
         'is_primary_address': isPrimaryAddress,
+        'wallet': 0,
         'profile_image':
             await _uploadProfileImage() ?? existingData?['profile_image'],
         'email': user.email,
@@ -305,6 +304,7 @@ class _AddAccountState extends State<AddAccount> {
             selectedLongitude = data['longitude'];
             strProvince = data['province'];
             strCity = data['city'];
+            wallet = data['wallet'] ?? 0;
             isPrimaryAddress = data['is_primary_address'] ?? false;
             context.read<PickAddressBloc>().add(
                 PickAddressEvent.update(selectedLatitude, selectedLongitude));

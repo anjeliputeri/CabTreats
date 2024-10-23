@@ -65,7 +65,6 @@ class _MenuStoreState extends State<MenuStore> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      // builder: (context) => StoreProduct(email: email, name: name), // Customize as needed
                       builder: (context) => DetailStore(email: email, name: name),
                     ),
                   );
