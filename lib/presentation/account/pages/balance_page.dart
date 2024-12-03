@@ -297,7 +297,8 @@ class _BalancePageState extends State<BalancePage> {
             child: CustomTextField(
               controller: withdrawAmountController,
               keyboardType: TextInputType.number,
-              label: 'Nominal Pengambilan Uang',
+              // label: 'Nominal Pengambilan Uang',
+              label: 'Nominal Pengambilan Uang'
               onChanged: (value) {
                 setState(() {
                   int actualBalance = int.tryParse(balance.replaceAll('Rp ', '').replaceAll('.', '')) ?? 0;
